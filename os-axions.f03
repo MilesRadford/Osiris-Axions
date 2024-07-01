@@ -113,6 +113,47 @@ subroutine advance_axions_cyl_2d( this, gdt, i0, i1 )
 subroutine create_photonpair( this, photon, emf, dt, i0, i1)
 !---------------------------------------------------------------------------------------------------
 
+    use m_species_define_qed, only : t_species_qed
+    use m_species_comm, only : t_part_idx, remove_particles
+    use m_photons_diagnostics
+    
+    implicit none
+    
+    integer, parameter :: rank = 2
+    
+    ! dummy variables
+    
+    class( t_photons ), intent(inout) :: photons
+    class( t_axions ), intent(inout) :: this
+    class( t_emf), intent(in) :: emf
+    real(p_double),   intent(in) :: dt
+    integer,   intent(in) :: i0, i1
+    
+    real(p_k_part), dimension(p_p_dim,p_cache_size) :: bp, ep
+    integer :: i, pp, np, ptrcur
+
+    ! attributes for new particles
+    real(p_k_part)   , dimension(p_p_dim) :: p_new
+
+    ! index of photons to remove
+    type(t_part_idx) :: local_idx
+    
+    ! dummy variables for chi parameter diagnostic
+    real(p_k_part) :: q_g
+    integer, dimension(p_x_dim) :: ix_g
+    
+    ! Physical constants taken from NIST reference data
+    real(p_double), parameter :: hbar  = 1.054571726d-34     ! J s
+    real(p_double), parameter :: me    = 9.10938291d-31      ! kg
+    real(p_double), parameter :: cl    = 299792458.0         ! m/s
+    real(p_double), parameter :: alpha = 7.2973525698d-3     ! (no units)
+
+    real(p_double), parameter :: PI    = 3.141592653589793d0
+    
+    ! see notes a + emf -- gamma (x2?) 
+
+    
+
 !---------------------------------------------------------------------------------------------------
 subroutine advance_axions( this, photons, emf, gdt, tid, n_threads)
 !---------------------------------------------------------------------------------------------------
@@ -183,12 +224,6 @@ subroutine advance_axions( this, photons, emf, gdt, tid, n_threads)
     end select
   
 end subroutine advance_photons
-
-
-
-
-
-
 
 
 
