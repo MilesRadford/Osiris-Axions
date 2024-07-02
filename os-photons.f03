@@ -577,6 +577,107 @@ subroutine create_pairs( this, electrons, positrons, emf, dt, i0, i1)
 
     end subroutine add_particle_index
     !---------------------------------------------------------------------------------------------------
+end subroutine create_pairs
+
+
+!-------------------------------------------------------------------------------------------------------
+subroutine create_axion( this, axions, emf, dt, i0, i1)
+!-------------------------------------------------------------------------------------------------------
+    use m_species_define_qed, only : t_species_qed
+    use m_species_comm, only : t_part_idx, remove_particles
+    use m_axions-diagnostics
+
+    implicit none
+
+    class( t_photons ),    intent(inout) :: this
+    class( t_axions ),    intent(inout) :: axions
+    real(p_double),   intent(in) :: dt
+    integer,   intent(in) :: i0, i1
+
+    ! attributes for new particles
+    real(p_k_part)   , dimension(p_p_dim) :: p_new
+
+    ! index of photons to remove
+    type(t_part_idx) :: local_idx
+
+    ! Physical constants taken from NIST reference data
+    real(p_double), parameter :: hbar  = 1.054571726d-34     ! J s
+    real(p_double), parameter :: me    = 9.10938291d-31      ! kg
+    real(p_double), parameter :: cl    = 299792458.0         ! m/s
+    real(p_double), parameter :: alpha = 7.2973525698d-3     ! (no units)
+    real(p_double), parameter :: Gamma = 1.0                 ! J
+
+    real(p_double), parameter :: PI    = 3.141592653589793d0
+
+    ! advance position of photons i0 to i1 in chunks of p_cache_size
+    do ptrcur = i0, i1, p_cache_size
+
+        ! check if last copy of table and set np
+        if( ptrcur + p_cache_size > i1 ) then
+            np = i1 - ptrcur + 1
+        else
+            np = p_cache_size
+        endif
+
+        ap = ptrcur
+
+        call random_number( rando )
+        if ( rando < (Gamma/hbar) * dt ) then
+
+            !create axion
+            p_new = real(  )
+            call axions%create_particle(  )
+
+            !register emission
+
+
+            !mark photon for deletion
+            call add_particle_index( local_idx, ap )
+
+        endif
+        ap = ap + 1
+    enddo
+
+!delete photons
+call remove_particles( this%t_species , local_idx%idx )
+
+! cleanup the local_idx buffer for deleted photons
+    if ( local_idx%buf_size > 0 ) call freemem( local_idx%idx )
+    local_idx%start = 1
+    local_idx%nidx = 0
+    local_idx%buf_size = 0
+
+    contains
+
+    !---------------------------------------------------------------------------------------------------
+    subroutine add_particle_index( list, i )
+
+        use m_species_define
+
+        implicit none
+
+        type(t_part_idx), intent(inout) :: list
+        integer, intent(in)              :: i
+
+        integer, dimension(:), pointer :: tmp_idx => null()
+
+        ! grow buffer if necessary
+        if ( list%nidx + 1 > list%buf_size ) then
+            list%buf_size = list%buf_size + p_spec_buf_block
+            call alloc(  tmp_idx, (/ list%buf_size /))
+            if ( list%nidx > 0 ) call memcpy( tmp_idx, list%idx, list%nidx )
+            call freemem( list%idx )
+            list%idx => tmp_idx
+        endif
+
+        ! add particle index to send index list
+        list%nidx = list%nidx + 1
+        list%idx( list%nidx ) = i
+
+    end subroutine add_particle_index
+    !---------------------------------------------------------------------------------------------------
+
+end subroutine create_axion
 
 end subroutine create_pairs
 !---------------------------------------------------------------------------------------------------
