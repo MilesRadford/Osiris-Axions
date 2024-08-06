@@ -49,6 +49,7 @@ type :: t_qed_clist
 integer, dimension(:), pointer :: lst_e => null() ! electrons
 integer, dimension(:), pointer :: lst_p => null() ! positrons
 integer, dimension(:), pointer :: lst_ph => null() ! photons
+integer, dimension(:), pointer :: lst_a => null() ! axions
 
 integer :: ic_mates, d_buff = p_vecwidth, Ncoll_cells  ! number of macro-collisions
 integer, dimension(p_x_dim) :: num_coll_cells, npc_per_ccell ! number of collision cells, number of pic cells per collision cell
@@ -57,6 +58,7 @@ integer, dimension(p_x_dim) :: num_coll_cells, npc_per_ccell ! number of collisi
 integer, dimension(:), pointer :: index_e => null()
 integer, dimension(:), pointer :: index_p => null()
 integer, dimension(:), pointer :: index_ph => null()
+integer, dimension(:), pointer :: index_a => null()
 
 ! indexes for shuffle
 integer, dimension(:), pointer :: Shuf_ind_ep => null()
@@ -112,6 +114,7 @@ contains
       call alloc( this%lst_e, (/ Ncoll_cells /) )
       call alloc( this%lst_p, (/ Ncoll_cells /) )
       call alloc( this%lst_ph, (/ Ncoll_cells /) )
+      call alloc( this%lst_a, (/ Ncoll_cells /) )
     endif
     if (if_list) then
       call alloc( this%Shuf_ind_ep, (/ this%d_buff /) )
@@ -120,6 +123,7 @@ contains
       call alloc( this%index_e, (/ this%d_buff /) )
       call alloc( this%index_p, (/ this%d_buff /) )
       call alloc( this%index_ph, (/ this%d_buff /) )
+      call alloc( this%index_a, (/ this%d_buff /) )
       call alloc( this%Msk_ep, (/ this%d_buff /) )
     endif
 
@@ -139,6 +143,7 @@ contains
         this%lst_e(i) = 0
         this%lst_p(i) = 0
         this%lst_ph(i) = 0
+        this%lst_a(i) = 0
       enddo
     endif
     if (if_list) then
@@ -146,6 +151,7 @@ contains
         this%idx_c_mates(i,:) = (/ 0, 0, 0 /)
         this%index_e(i) = 0
         this%index_p(i) = 0
+        this%index_ph(i) = 0
         this%index_ph(i) = 0
         this%Shuf_ind_ep = i
         this%Shuf_ind_ph = i
@@ -167,11 +173,13 @@ contains
       call freemem( this%lst_e )
       call freemem( this%lst_p )
       call freemem( this%lst_ph )
+      call freemem( this%lst_a )
     endif
     if (if_list) then
       call freemem( this%index_e )
       call freemem( this%index_p )
       call freemem( this%index_ph )
+      call freemem( this%index_a )
       call freemem( this%Shuf_ind_ep )
       call freemem( this%Shuf_ind_ph )
       call freemem( this%Msk_ep )
@@ -316,13 +324,14 @@ function Pnu_C( w1, gama, w0, Coeff, q )
 
 end function Pnu_C
 
-subroutine get_coll_listNTC( this,electrons,positrons,photons,dt,sigma_coeff ) ! based on the No-Time-Counter (NTC) collision model
+subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_coeff ) ! based on the No-Time-Counter (NTC) collision model
 
   implicit none
 
   class( t_qed_clist ), intent(inout) :: this
   class(t_species_qed), intent(in) :: electrons, positrons
   class(t_photons), intent(in) :: photons
+  class(t_axions), intent(in) :: axions
   real(p_double), intent(in) :: dt, sigma_coeff
 
   ! dummy variables
@@ -343,6 +352,7 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,dt,sigma_coeff ) !
   Ne = this%lst_e(1)
   Np = this%lst_p(1)
   Nph = this%lst_ph(1)
+  Na = this%lst_a(1)
 
   dumNp = 0.0_p_double
   dumNe = 0.0_p_double
@@ -353,6 +363,7 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,dt,sigma_coeff ) !
     weight_e=0.0_p_double
     weight_p=0.0_p_double
     weight_ph=0.0_p_double
+    weight_a=0.0_p_double
     P_max = 0.0_p_double
     if ( ( (Ne > 0) .or. (Np > 0) ) .and. (Nph > 0) ) then ! check if there are scattering macro-particles
 

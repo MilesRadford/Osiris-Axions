@@ -47,6 +47,8 @@ use m_diagnostic_utilities
 use m_zpulse,               only: t_zpulse_list
 use m_species_loadbalance,  only: add_density_load
 use m_logprof,              only: begin_event, end_event
+use m_axions_define,        only: t_axions
+
 
 implicit none
 
@@ -57,6 +59,7 @@ private
 type :: t_qed_spec_group
 
   class( t_photons ),     pointer :: photons
+  class( t_axions ),	   pointer :: axions
   class( t_species_qed ), pointer :: electrons ! electrons and positrons point to species
   class( t_species_qed ), pointer :: positrons ! in the main particle set
 
@@ -221,11 +224,23 @@ subroutine read_input_spec_group_qed( this, input_file, periodic, if_move, grid,
     this % photons % rqm = 0.
     this % photons % if_pairprod = if_pairprod
     this % photons % pp_chi_cutoff = pp_chi_cutoff
+    
+    ! read axions species
+    SCR_ROOT("Reading associated axions configuration...")
+    
+    call this % axions % read_input( input_file, spname,  periodic, if_move, grid, &
+                                                dt, .true., sim_options )
+    
+    ! force axions and set pair production flag
+    this % axions % rqm = 0.
+    this % axions % if_pairprod = if_pairprod
+    this % axions % pp_chi_cutoff = pp_chi_cutoff
 
     ! qed rescalling
     this % electrons % qed_zeta = zeta_p
     this % positrons % qed_zeta = zeta_p
     this % photons % qed_zeta = zeta_g
+    this % axions % qed_zeta = zeta_g
 
     ! process pair production model
     select case ( trim( pairprod ))
@@ -233,14 +248,17 @@ subroutine read_input_spec_group_qed( this, input_file, periodic, if_move, grid,
       this % electrons % pairprod = p_pairprod_qed
       this % positrons % pairprod = p_pairprod_qed
       this % photons % pairprod = p_pairprod_qed
+      this % axions % pairprod = p_pairprod_qed
     case ( "gthr" )
       this % electrons % pairprod = p_pairprod_gthr
       this % positrons % pairprod = p_pairprod_gthr
       this % photons % pairprod = p_pairprod_gthr
+      this % axions % pairprod = p_pairprod_gthr
     case default
       this % electrons % pairprod = p_pairprod_qed
       this % positrons % pairprod = p_pairprod_qed
       this % photons % pairprod = p_pairprod_qed
+      this % axions % pairprod = p_pairprod_qed
     end select
 
     this % electrons % pairprod_gthr = pairprod_gthr
@@ -249,6 +267,7 @@ subroutine read_input_spec_group_qed( this, input_file, periodic, if_move, grid,
     this % electrons % pairprod_gpair = pairprod_gpair
     this % positrons % pairprod_gpair = pairprod_gpair
     this % photons % pairprod_gpair = pairprod_gpair
+    this % axions % pairprod_gpair = pairprod_gpair
 
 end subroutine read_input_spec_group_qed
 !-----------------------------------------------------------------------------------------
@@ -404,16 +423,19 @@ subroutine read_nml_qed_group_diag( this, input_file )
 
     ! emitted pairs energy diagnostic
     this % photons % ndump_fac_pairs = ndump_fac_pairs
+    this % axions % ndump_fac_pairs = ndump_fac_pairs
 
     ! emission events diagnostic
     this % electrons % ndump_fac_n_emit = ndump_fac_n_emit
     this % positrons % ndump_fac_n_emit = ndump_fac_n_emit
     this % photons % ndump_fac_n_emit = ndump_fac_n_emit
+    this % axions % ndump_fac_n_emit = ndump_fac_n_emit
 
     ! chi parameter grid diagnostic
     this % electrons % ndump_fac_chi = ndump_fac_chi
     this % positrons % ndump_fac_chi = ndump_fac_chi
     this % photons % ndump_fac_chi = ndump_fac_chi
+    this % axions % ndump_fac_chi = ndump_fac_chi
 
     ! radiation sphere diagnostic
     this % electrons % ndump_fac_radsphere = ndump_fac_radsphere
@@ -477,6 +499,9 @@ subroutine report_spec_group_qed( this, emf, g_space, grid, no_co, tstep, t, sen
     
     ! photons specific diagnostics
     call this % photons % report( emf, g_space, grid, no_co, tstep, t, send_msg, recv_msg )
+    
+    ! axions specific diagnostics
+    call this % axions % report( emf, g_space, grid, no_co, tstep, t, send_msg, recv_msg )
 
 end subroutine report_spec_group_qed
 !-----------------------------------------------------------------------------------------
@@ -528,7 +553,7 @@ subroutine read_input_part_qed( this, input_file, periodic, if_move, grid, dt, s
     ! number of standard species
     num_species = 0
     
-    ! number of QED groups (electrons + positrons + photons)
+    ! number of QED groups (electrons + positrons + photons + axions)
     num_qed = 0
 
     low_jay_roundoff = .false.
@@ -730,10 +755,13 @@ subroutine allocate_objs_part_qed( this )
       allocate( t_photons     :: this % qed_group(i) % photons   )
       allocate( t_species_qed :: this % qed_group(i) % electrons )
       allocate( t_species_qed :: this % qed_group(i) % positrons )
+      allocate( t_axions      :: this % qed_group(i) % axions   )
 
-      ! associate photons pointer in electrons and positrons species with qed group photons
+      ! associate photons pointer in electrons and positrons species with qed group photons and axions
       this % qed_group(i) % electrons % photons => this % qed_group(i) % photons
       this % qed_group(i) % positrons % photons => this % qed_group(i) % photons
+      this % qed_group(i) % electrons % axions => this % qed_group(i) % axions
+      this % qed_group(i) % positrons % axions => this % qed_group(i) % axions
 
       ! associate reciprocal species pointer in electrons and positrons species
       this % qed_group(i) % electrons % recip_spec => this % qed_group(i) % positrons
@@ -745,9 +773,11 @@ subroutine allocate_objs_part_qed( this )
 
       ! pass in dlb parameters
       this % qed_group(i) % photons   % dlb_fld2_thresh = this % dlb_fld2_thresh
+      this % qed_group(i) % axions    % dlb_fld2_thresh = this % dlb_fld2_thresh
       this % qed_group(i) % electrons % dlb_fld2_thresh = this % dlb_fld2_thresh
       this % qed_group(i) % positrons % dlb_fld2_thresh = this % dlb_fld2_thresh
       this % qed_group(i) % photons   % dlb_part_weight = this % dlb_part_weight
+      this % qed_group(i) % axions    % dlb_part_weight = this % dlb_part_weight
       this % qed_group(i) % electrons % dlb_part_weight = this % dlb_part_weight
       this % qed_group(i) % positrons % dlb_part_weight = this % dlb_part_weight
     enddo
@@ -825,6 +855,15 @@ subroutine init_part_qed( this, g_space, jay, emf, grid, no_co, bnd, zpulse_list
                     no_co, bnd%send_vdf, bnd%recv_vdf, bnd%bnd_cross, bnd%node_cross, bnd%send_spec, &
                     bnd%recv_spec, ndump_fac, restart, restart_handle, sim_options, tstep, tmax )
      enddo
+     
+  ! call individual axions init for each qed group
+  if ( this%num_qed > 0 ) then
+     do i=1, this%num_qed
+        call this%qed_group(i)%axions%init( i, &
+                    this%interpolation, this%grid_center, grid, g_space, emf, jay, &
+                    no_co, bnd%send_vdf, bnd%recv_vdf, bnd%bnd_cross, bnd%node_cross, bnd%send_spec, &
+                    bnd%recv_spec, ndump_fac, restart, restart_handle, sim_options, tstep, tmax )
+     enddo
 
      ! initialize random number generator
      ! (for performance reasons the QED code uses the compiler issued random number gen.)
@@ -885,6 +924,7 @@ subroutine cleanup_part_qed( this )
     ! cleanup photons
     do i=1, this%num_qed
       call this%qed_group(i)%photons%cleanup()
+      call this%qed_group(i)%axions%cleanup()
     enddo
 
     deallocate( this%qed_group )
@@ -916,10 +956,12 @@ subroutine update_boundary_part_qed( this, jay, g_space, no_co, dt, bnd )
   ! update boundary on superclass data (charged particles)
   call this % t_particles % update_boundary( jay, g_space, no_co, dt, bnd )
 
-  ! update boundary on photons, which are not part of this % t_particles % species
+  ! update boundary on photons and axions, which are not part of this % t_particles % species
   call begin_event(partboundev)
   do i = 1, this%num_qed
     call this % qed_group(i) % photons % update_boundary(  jay, no_co, dt, &
+        bnd%bnd_cross, bnd%node_cross, bnd%send_spec, bnd%recv_spec )
+    call this % qed_group(i) % axions % update_boundary(  jay, no_co, dt, &
         bnd%bnd_cross, bnd%node_cross, bnd%send_spec, bnd%recv_spec )
   enddo
   call end_event(partboundev)
@@ -944,9 +986,10 @@ subroutine get_diag_buffer_size_qed( this, gnx, diag_buffer_size )
   ! Get dignostic size from superclass
   call this % t_particles % get_diag_buffer_size( gnx, diag_buffer_size )
 
-  ! Also include photon species diagnostics
+  ! Also include photon and axion species diagnostics
   do i=1, this%num_qed
     call this % qed_group(i) % photons % get_diag_buffer_size( gnx, diag_buffer_size )
+    call this % qed_group(i) % axions % get_diag_buffer_size( gnx, diag_buffer_size )
   enddo
 
 
@@ -954,7 +997,7 @@ end subroutine get_diag_buffer_size_qed
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-! Report charged particle and photon data
+! Report charged particle and photon/axion data
 !-----------------------------------------------------------------------------------------
 subroutine report_part_qed( this, emf, g_space, grid, no_co, tstep, t, send_msg, recv_msg )
 
@@ -985,7 +1028,7 @@ end subroutine report_part_qed
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-! Report charged particle and photon energy data
+! Report charged particle and photon/axion energy data
 !-----------------------------------------------------------------------------------------
 subroutine report_energy_part_qed( this, no_co, tstep, t )
 
@@ -1013,9 +1056,15 @@ subroutine report_energy_part_qed( this, no_co, tstep, t )
 
       ! report photon energy
       call this % qed_group(i) % photons % report_energy( no_co, tstep, t )
+      
+      ! report axion energy
+      call this % qed_group(i) % axion % report_energy( no_co, tstep, t )
 
       ! report emitted pairs energy
       call this % qed_group(i) % photons % report_pairs( no_co, tstep, t )
+      
+      ! report emitted pairs energy (axion)
+      call this % qed_group(i) % axion % report_pairs( no_co, tstep, t )
   enddo
 
 
@@ -1052,6 +1101,7 @@ subroutine advance_deposit_qed( this, emf, jay, tstep, t, no_co, options )
     call this%qed_group(i)%electrons%mergedel( n( tstep ), jay % pf(1) % nx_, t, no_co )
     call this%qed_group(i)%positrons%mergedel( n( tstep ), jay % pf(1) % nx_, t, no_co )
     call this%qed_group(i)%photons  %mergedel( n( tstep ), jay % pf(1) % nx_, t, no_co )
+    call this%qed_group(i)%axions  %mergedel( n( tstep ), jay % pf(1) % nx_, t, no_co )
   enddo
 
   ! create pairs and advance photons
@@ -1060,6 +1110,7 @@ subroutine advance_deposit_qed( this, emf, jay, tstep, t, no_co, options )
     call this % qed_group(i) % photons % advance( &
             this%qed_group(i)%electrons, &
             this%qed_group(i)%positrons, &
+            this%qed_group(i)%axions, &
             emf, dt( tstep ), 0, 1)
   enddo
   call end_event( pushev )
@@ -1118,6 +1169,7 @@ subroutine list_algorithm_part_qed( this )
     call this%qed_group(i)%electrons%list_algorithm()
     call this%qed_group(i)%positrons%list_algorithm()
     call this%qed_group(i)%photons%list_algorithm()
+    call this%qed_group(i)%axions%list_algorithm()
   enddo
 
   ! List algorithm for standard (non QED) species
@@ -1156,9 +1208,10 @@ subroutine write_checkpoint_part_qed( this, restart_handle )
   ! Call superclass method to save charged particle checkpoint data
   call this % t_particles % write_checkpoint( restart_handle )
 
-  ! Save photon data
+  ! Save photon/axion data
   do i=1, this%num_qed
     call this%qed_group(i)%photons%write_checkpoint( restart_handle )
+    call this%qed_group(i)%axions%write_checkpoint( restart_handle )
   enddo
 
 end subroutine write_checkpoint_part_qed
@@ -1186,6 +1239,8 @@ subroutine move_window_part_qed( this, g_space, grid, jay, no_co, bnd )
   ! Move photons in QED groups
   do i=1, this%num_qed
     call move_window( this%qed_group(i)%photons, g_space, grid, jay, no_co, &
+        bnd%bnd_cross, bnd%node_cross, bnd%send_spec, bnd%recv_spec )
+    call move_window( this%qed_group(i)%axions, g_space, grid, jay, no_co, &
         bnd%bnd_cross, bnd%node_cross, bnd%send_spec, bnd%recv_spec )
   enddo
 
@@ -1223,6 +1278,11 @@ subroutine add_load_part_qed( this, grid, emf, n )
     ! Add load for photons
     do i = 1, this % num_qed
       call this % qed_group(i) % photons % add_particle_load( grid, emf )
+    enddo
+    
+    ! Add load for axions
+    do i = 1, this % num_qed
+      call this % qed_group(i) % axions % add_particle_load( grid, emf )
     enddo
 
   else
@@ -1276,6 +1336,12 @@ subroutine reshape_part_qed( this, old_lb, new_lb, no_co, send_msg, recv_msg )
     ! reshape the photon species
     do i = 1, this % num_qed
       call this % qed_group(i) % photons % reshape( old_lb, new_lb, msg_patt, no_co, &
+                                                    send_msg, recv_msg )
+    enddo
+    
+    ! reshape the axion species
+    do i = 1, this % num_qed
+      call this % qed_group(i) % axions % reshape( old_lb, new_lb, msg_patt, no_co, &
                                                     send_msg, recv_msg )
     enddo
 
@@ -1339,6 +1405,7 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
   if (this%qed_group(1)%electrons%num_par >0) call sort_merge_species(this%qed_group(1)%electrons,t ,this%clist%npc_per_ccell,this%clist%lst_e)
   if (this%qed_group(1)%positrons%num_par >0) call sort_merge_species(this%qed_group(1)%positrons,t ,this%clist%npc_per_ccell,this%clist%lst_p)
   if (this%qed_group(1)%photons%num_par >0) call sort_merge_species(this%qed_group(1)%photons,t ,this%clist%npc_per_ccell,this%clist%lst_ph)
+  if (this%qed_group(1)%axions%num_par >0) call sort_merge_species(this%qed_group(1)%axions,t ,this%clist%npc_per_ccell,this%clist%lst_a)
   !this%qed_group(1)%photons%w => this%qed_group(1)%photons%q ! needed to link w => q as with the sorting of normal species this info is lost
 
   ! grow buffer of collision list if needed
@@ -1348,7 +1415,11 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
   num_par_req_p = maxval( (/num_par_req_p,this%clist%lst_p(1)/))
   num_par_req_ph = maxval( this%clist%lst_ph(2:this%clist%Ncoll_cells) - this%clist%lst_ph(1:this%clist%Ncoll_cells-1) )
   num_par_req_ph = maxval( (/num_par_req_ph,this%clist%lst_ph(1)/))
-  num_par_req = maxval( (/ num_par_req_e+num_par_req_p, num_par_req_ph /) )
+  
+  num_par_req_a = maxval( this%clist%lst_a(2:this%clist%Ncoll_cells) - this%clist%lst_a(1:this%clist%Ncoll_cells-1) )
+  num_par_req_a = maxval( (/num_par_req_a,this%clist%lst_a(1)/))
+  
+  num_par_req = maxval( (/ num_par_req_e+num_par_req_p, num_par_req_ph, num_par_req_a /) )
   if (num_par_req>this%clist%d_buff) then
     call this % clist % grow_buffer( num_par_req  )
   endif
@@ -1356,7 +1427,7 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
   ! 2 ) ----- Compute the probability matrix and produce the list of colliding couples
 
 !print*,'before collision list'
-  call get_coll_listNTC(this%clist,this%qed_group(1)%electrons,this%qed_group(1)%positrons,this%qed_group(1)%photons, &
+  call get_coll_listNTC(this%clist,this%qed_group(1)%electrons,this%qed_group(1)%positrons,this%qed_group(1)%photons, this%qed_group(1)%axions, &
                         dt(tstep),sigma_coeff)
 
   ! 3 ) ------ Collides the couples
