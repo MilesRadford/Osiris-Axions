@@ -56,8 +56,9 @@ type, extends( t_species ) :: t_species_qed
   ! radiated energy
   real(p_double), dimension(5) :: energy_rad = 0.0_p_double
 
-  ! pointer to qed group photons
+  ! pointer to qed group photons + axions
   class( t_species ), pointer :: photons ! photons, always associated
+  class( t_species ), pointer :: axions ! axions, always associated
 
   ! pointer to reciprocal qed species
   class( t_species ), pointer :: recip_spec => null()
@@ -92,6 +93,7 @@ type, extends( t_species ) :: t_species_qed
   real(p_double), dimension(:), pointer :: radspect => null()  
   real(p_double), dimension(:), pointer :: radspect_oor => null() 
   real(p_double), dimension(:), pointer :: chispect_photons => null() 
+  real(p_double), dimension(:), pointer :: chispect_axions => null()
   real(p_double), dimension(:), pointer :: chispect_leptons => null() 
 
   ! spherical radiation spectrum diagnostic ndump
@@ -274,6 +276,7 @@ subroutine allocate_objs_spec_qed( this )
       ! set all values to zero
       this%chispect_leptons = 0.0_p_double
       this%chispect_photons = 0.0_p_double
+      this%chispect_axions = 0.0_p_double
 
   endif
 
@@ -399,6 +402,7 @@ subroutine cleanup_spec_qed( this )
     ! allocate arrays
     call freemem( this%chispect_leptons )
     call freemem( this%chispect_photons )
+    call freemem( this%chispect_axions )
   endif
 
   ! cleanup spherical radiated energy spectrum diagnostic arrays

@@ -9,6 +9,7 @@ module m_qed_collide
   use m_parameters
   use m_species_define_qed
   use m_photons_define
+  use m_axions_define
   use m_system
   use m_node_conf
   use m_random
@@ -28,6 +29,8 @@ private
 ! collision type
 integer, parameter :: eph = 1 ! Compton scattering electron-photon
 integer, parameter :: pph = 2 ! Compton scattering positron-photon
+integer, parameter :: ea = 1 ! Compton scattering electron-axion
+integer, parameter :: pa = 2 ! Compton scattering positron-axion
 
 type :: t_qed_collide_info
 
@@ -63,6 +66,7 @@ integer, dimension(:), pointer :: index_a => null()
 ! indexes for shuffle
 integer, dimension(:), pointer :: Shuf_ind_ep => null()
 integer, dimension(:), pointer :: Shuf_ind_ph => null()
+integer, dimension(:), pointer :: Shuf_ind_a => null()
 
 ! Mask
 integer, dimension(:), pointer :: Msk_ep => null()
@@ -96,7 +100,7 @@ end interface
 !  module procedure cdf_Compton
 !end interface
 
-public ::  eph, pph, Compton_scatter, angle_Compton_gen, cdf_Compton, angle_Thomson_gen, get_coll_listNTC
+public ::  eph, pph, ea, pa, Compton_scatter, angle_Compton_gen, cdf_Compton, angle_Thomson_gen, get_coll_listNTC
 
 contains
 
@@ -119,6 +123,7 @@ contains
     if (if_list) then
       call alloc( this%Shuf_ind_ep, (/ this%d_buff /) )
       call alloc( this%Shuf_ind_ph, (/ this%d_buff /) )
+      call alloc( this%Shuf_ind_a, (/ this%d_buff /) )
       call alloc( this%idx_c_mates, (/Ncoll_cells*this%d_buff, 3 /) )
       call alloc( this%index_e, (/ this%d_buff /) )
       call alloc( this%index_p, (/ this%d_buff /) )
@@ -152,9 +157,10 @@ contains
         this%index_e(i) = 0
         this%index_p(i) = 0
         this%index_ph(i) = 0
-        this%index_ph(i) = 0
+        this%index_a(i) = 0
         this%Shuf_ind_ep = i
         this%Shuf_ind_ph = i
+        this%Shuf_ind_a = i
         this%Msk_ep(i) = 0
       enddo
     endif
@@ -182,6 +188,7 @@ contains
       call freemem( this%index_a )
       call freemem( this%Shuf_ind_ep )
       call freemem( this%Shuf_ind_ph )
+      call freemem( this%Shuf_ind_a )
       call freemem( this%Msk_ep )
     endif
 
@@ -335,10 +342,10 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
   real(p_double), intent(in) :: dt, sigma_coeff
 
   ! dummy variables
-  real(p_double) :: w0, w1, ti_list, te_list, P_max, Coeff, gama, q, weight_max, PP, weight_e,weight_p,weight_ph,dumNe,dumNp
+  real(p_double) :: w0, w1, ti_list, te_list, P_max, Coeff, gama, q, weight_max, PP, weight_e,weight_p,weight_ph, weight_a, dumNe,dumNp
   real(p_double), dimension(3) :: p,k
 
-  integer :: i, i_cell, NC_max, Ne, Np, Nph, num_c, ind, ind_ep, ind_ph, Msk, i_buff
+  integer :: i, i_cell, NC_max, Ne, Np, Nph, Na, num_c, ind, ind_ep, ind_ph, Msk, i_buff
   integer :: ie_l, ie_u, ip_l, ip_u, iph_l, iph_u ! lower and upper indexes in the collision cell
 
   real, parameter :: r_e = 2.8179403227E-13, s_c = 2.99792458E10! classical electron radius and speed of light in cgs

@@ -1058,13 +1058,13 @@ subroutine report_energy_part_qed( this, no_co, tstep, t )
       call this % qed_group(i) % photons % report_energy( no_co, tstep, t )
       
       ! report axion energy
-      call this % qed_group(i) % axion % report_energy( no_co, tstep, t )
+      call this % qed_group(i) % axions % report_energy( no_co, tstep, t )
 
       ! report emitted pairs energy
       call this % qed_group(i) % photons % report_pairs( no_co, tstep, t )
       
       ! report emitted pairs energy (axion)
-      call this % qed_group(i) % axion % report_pairs( no_co, tstep, t )
+      call this % qed_group(i) % axions % report_pairs( no_co, tstep, t )
   enddo
 
 
@@ -1517,6 +1517,88 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
             endif
           endif
         endif
+        
+        case (ea)
+        q_diff = abs( this%qed_group(1)%electrons%q(this%clist%idx_c_mates(i,1)) ) - this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2))
+        if (abs(q_diff) <= 1E-6)  then
+          call Compton_scatter(this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) ), this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , this%qed_collide_info%if_recoil)
+        else
+          if(q_diff .gt. 0) then
+            ! create a new electron with the weight equal to the weight difference
+            newix = this%qed_group(1)%electrons%ix( :,this%clist%idx_c_mates(i,1) )
+            newx = this%qed_group(1)%electrons%x( :,this%clist%idx_c_mates(i,1) )
+            newp = this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) )
+            call this % qed_group(1) % electrons % create_particle( newix, newx, newp , -q_diff )
+            ! set the remaining weight
+            this%qed_group(1)%electrons%q(this%clist%idx_c_mates(i,1) ) = -this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2) )
+            call Compton_scatter(this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) ), this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , this%qed_collide_info%if_recoil)
+          else
+            if(this%qed_collide_info%if_split) then
+              ! create a new axion with the weight equal to the weight difference
+              newix = this%qed_group(1)%axions%ix( :,this%clist%idx_c_mates(i,2) )
+              newx = this%qed_group(1)%axions%x( :,this%clist%idx_c_mates(i,2) )
+              newp = this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) )
+              call this%qed_group(1)%axions%create_particle( newix , newx, newp, -q_diff )
+              ! set the remaining weight
+              this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2) ) = - this%qed_group(1)%electrons%q(this%clist%idx_c_mates(i,1) )
+              !this%qed_group(1)%photons%w(this%clist%idx_c_mates(i,2) ) = this%qed_group(1)%photons%q(this%clist%idx_c_mates(i,2) )
+              call Compton_scatter(this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) ), &
+                                    this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , &
+                                    this%qed_collide_info%if_recoil)
+            else ! do not inject axion
+              !print*,'qe',this%qed_group(1)%electrons%q( this%clist%idx_c_mates(i,1) ),'q_ph',this%qed_group(1)%photons%q( this%clist%idx_c_mates(i,2) )
+              newp = this%qed_group(1)%axion%p( :,this%clist%idx_c_mates(i,2) ) ! the old actually
+              call Compton_scatter(this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) ), &
+                                    this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , &
+                                    this%qed_collide_info%if_recoil)
+              this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) )  = newp ! do not change the photon momentum
+              this%qed_group(1)%axions%q( this%clist%idx_c_mates(i,2) )  = abs(q_diff)
+              !this%qed_group(1)%photons%w( this%clist%idx_c_mates(i,2) )  = abs(q_diff)
+              !print*,'p_phNew',this%qed_group(1)%photons%p( :,this%clist%idx_c_mates(i,2) ),'q_phNew',this%qed_group(1)%photons%q( this%clist%idx_c_mates(i,2) )
+            endif
+          endif
+        endif
+
+      case (pa)
+        q_diff =  this%qed_group(1)%positrons%q(this%clist%idx_c_mates(i,1)) - this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2))
+        if(abs(q_diff) <= 1E-6)  then
+          call Compton_scatter(this%qed_group(1)%positrons%p( :,this%clist%idx_c_mates(i,1) ), this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , this%qed_collide_info%if_recoil)
+        else
+          if(q_diff .gt. 0) then
+            ! create a new positron with the weight equal to the weight difference
+            newix = this%qed_group(1)%positrons%ix( :,this%clist%idx_c_mates(i,1) )
+            newx = this%qed_group(1)%positrons%x( :,this%clist%idx_c_mates(i,1) )
+            newp = this%qed_group(1)%positrons%p( :,this%clist%idx_c_mates(i,1) )
+            call this % qed_group(1) % positrons % create_particle( newix, newx, newp , q_diff )
+            ! set the remaining weight
+            this%qed_group(1)%positrons%q(this%clist%idx_c_mates(i,1) ) = -this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2) )
+            call Compton_scatter(this%qed_group(1)%positrons%p( :,this%clist%idx_c_mates(i,1) ), this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , this%qed_collide_info%if_recoil)
+          else
+            if(this%qed_collide_info%if_split) then
+              ! create a new photon with the weight equal to the weight difference
+              newix = this%qed_group(1)%axions%ix( :,this%clist%idx_c_mates(i,2) )
+              newx = this%qed_group(1)%axions%x( :,this%clist%idx_c_mates(i,2) )
+              newp = this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) )
+              call this%qed_group(1)%axions%create_particle( newix , newx, newp, -q_diff )
+              ! set the remaining weight
+              this%qed_group(1)%axions%q(this%clist%idx_c_mates(i,2) ) = this%qed_group(1)%positrons%q(this%clist%idx_c_mates(i,1) )
+              !this%qed_group(1)%photons%w(this%clist%idx_c_mates(i,2) ) = this%qed_group(1)%photons%q(this%clist%idx_c_mates(i,2) )
+              call Compton_scatter(this%qed_group(1)%positrons%p( :,this%clist%idx_c_mates(i,1) ), &
+                                    this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , &
+                                    this%qed_collide_info%if_recoil)
+            else ! do not inject axion
+              !print*,'qe',this%qed_group(1)%positrons%q( this%clist%idx_c_mates(i,1) ),'q_ph',this%qed_group(1)%photons%q( this%clist%idx_c_mates(i,2) )
+              newp = this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) ! the old actually
+              call Compton_scatter(this%qed_group(1)%positrons%p( :,this%clist%idx_c_mates(i,1) ), &
+                                    this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , &
+                                    this%qed_collide_info%if_recoil)
+              this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) )  = newp ! do not change the photon momentum
+              this%qed_group(1)%axions%q( this%clist%idx_c_mates(i,2) )  = abs(q_diff)
+              !this%qed_group(1)%photons%w( this%clist%idx_c_mates(i,2) )  = abs(q_diff)
+              !print*,'p_phNew',this%qed_group(1)%photons%p( :,this%clist%idx_c_mates(i,2) ),'q_phNew',this%qed_group(1)%photons%q( this%clist%idx_c_mates(i,2) )
+            endif
+          endif
+        endif
     end select
 
   enddo
@@ -1569,6 +1651,14 @@ subroutine report_node_load_part_qed( this, n, ndump, t, no_co )
       npart = npart + this % qed_group(i) % photons % num_par
     end do
   end select  
+  
+  ! Add axions
+  select type( this )
+  class is( t_particles_qed )
+    do i = 1, this % num_qed
+      npart = npart + this % qed_group(i) % axions % num_par
+    end do
+  end select 
 
   npart_dbl = npart
 
