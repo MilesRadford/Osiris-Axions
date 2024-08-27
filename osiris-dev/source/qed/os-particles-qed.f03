@@ -28,6 +28,7 @@ use m_node_conf,            only: t_node_conf
 use m_restart,              only: t_restart_handle, restart_io_write, restart_io_read
 use m_species_define_qed,   only: t_species_qed
 use m_photons_define,       only: t_photons
+use m_axions_define,        only: t_axions
 use m_species_define,       only: t_species, p_max_spname_len, p_cell_low, p_cell_near
 use m_diagnostic_utilities, only: p_diag_prec
 use m_particles_define,     only: p_report_quants
@@ -47,7 +48,6 @@ use m_diagnostic_utilities
 use m_zpulse,               only: t_zpulse_list
 use m_species_loadbalance,  only: add_density_load
 use m_logprof,              only: begin_event, end_event
-use m_axions_define,        only: t_axions
 
 
 implicit none
@@ -847,18 +847,13 @@ subroutine init_part_qed( this, g_space, jay, emf, grid, no_co, bnd, zpulse_list
   ! actually not yet...
   ! call setup_diag_qed( this )
 
-  ! call individual photons init for each qed group
+  ! call individual photons and axions init for each qed group
   if ( this%num_qed > 0 ) then
      do i=1, this%num_qed
         call this%qed_group(i)%photons%init( i, &
                     this%interpolation, this%grid_center, grid, g_space, emf, jay, &
                     no_co, bnd%send_vdf, bnd%recv_vdf, bnd%bnd_cross, bnd%node_cross, bnd%send_spec, &
                     bnd%recv_spec, ndump_fac, restart, restart_handle, sim_options, tstep, tmax )
-     enddo
-     
-  ! call individual axions init for each qed group
-  if ( this%num_qed > 0 ) then
-     do i=1, this%num_qed
         call this%qed_group(i)%axions%init( i, &
                     this%interpolation, this%grid_center, grid, g_space, emf, jay, &
                     no_co, bnd%send_vdf, bnd%recv_vdf, bnd%bnd_cross, bnd%node_cross, bnd%send_spec, &
@@ -1110,7 +1105,7 @@ subroutine advance_deposit_qed( this, emf, jay, tstep, t, no_co, options )
     call this % qed_group(i) % photons % advance( &
             this%qed_group(i)%electrons, &
             this%qed_group(i)%positrons, &
-            this%qed_group(i)%axions, &
+            !this%qed_group(i)%axions, &
             emf, dt( tstep ), 0, 1)
   enddo
   call end_event( pushev )
@@ -1386,7 +1381,7 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
   type( t_time_step ), intent(in) :: tstep
 
   ! dummy variables
-  integer :: i, num_par_req_e, num_par_req_p, num_par_req_ph, num_par_req
+  integer :: i, num_par_req_e, num_par_req_p, num_par_req_ph, num_par_req_a, num_par_req
   real(p_k_part) :: q_diff
   real(p_k_part), dimension(p_x_dim) :: newx
   integer, dimension(p_x_dim) :: newix
@@ -1547,7 +1542,7 @@ subroutine collide_qed(this, n, nxc, t, no_co, tstep )
                                     this%qed_collide_info%if_recoil)
             else ! do not inject axion
               !print*,'qe',this%qed_group(1)%electrons%q( this%clist%idx_c_mates(i,1) ),'q_ph',this%qed_group(1)%photons%q( this%clist%idx_c_mates(i,2) )
-              newp = this%qed_group(1)%axion%p( :,this%clist%idx_c_mates(i,2) ) ! the old actually
+              newp = this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) ! the old actually
               call Compton_scatter(this%qed_group(1)%electrons%p( :,this%clist%idx_c_mates(i,1) ), &
                                     this%qed_group(1)%axions%p( :,this%clist%idx_c_mates(i,2) ) , &
                                     this%qed_collide_info%if_recoil)

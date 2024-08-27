@@ -29,8 +29,8 @@ private
 ! collision type
 integer, parameter :: eph = 1 ! Compton scattering electron-photon
 integer, parameter :: pph = 2 ! Compton scattering positron-photon
-integer, parameter :: ea = 1 ! Compton scattering electron-axion
-integer, parameter :: pa = 2 ! Compton scattering positron-axion
+integer, parameter :: ea = 3 ! Compton scattering electron-axion
+integer, parameter :: pa = 4 ! Compton scattering positron-axion
 
 type :: t_qed_collide_info
 
@@ -345,7 +345,7 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
   real(p_double) :: w0, w1, ti_list, te_list, P_max, Coeff, gama, q, weight_max, PP, weight_e,weight_p,weight_ph, weight_a, dumNe,dumNp
   real(p_double), dimension(3) :: p,k
 
-  integer :: i, i_cell, NC_max, Ne, Np, Nph, Na, num_c, ind, ind_ep, ind_ph, Msk, i_buff
+  integer :: i, i_cell, NC_max, Ne, Np, Nph, Na, num_c, ind, ind_ep, ind_ph, ind_a, Msk, i_buff
   integer :: ie_l, ie_u, ip_l, ip_u, iph_l, iph_u ! lower and upper indexes in the collision cell
 
   real, parameter :: r_e = 2.8179403227E-13, s_c = 2.99792458E10! classical electron radius and speed of light in cgs
@@ -372,7 +372,7 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
     weight_ph=0.0_p_double
     weight_a=0.0_p_double
     P_max = 0.0_p_double
-    if ( ( (Ne > 0) .or. (Np > 0) ) .and. (Nph > 0) ) then ! check if there are scattering macro-particles
+    if ( ( (Ne > 0) .or. (Np > 0) ) .and. (Nph > 0) .or. (Na > 0) ) then ! check if there are scattering macro-particles
 
       ! get macro-particle indexes
       if (Ne>0) then
@@ -393,10 +393,15 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
         this%index_ph(i) = this%lst_ph(i_cell) - Nph+i
       enddo
       weight_ph = maxval( photons%q(  this%index_ph(1):this%index_ph(Nph) ) )
+      
+      do i=1, Na
+        this%index_a(i) = this%lst_a(i_cell) - Na+i
+      enddo
+      weight_a = maxval( axions%q(  this%index_a(1):this%index_a(Na) ) )
 
 
       ! get maximum weight
-      weight_max = maxval( (/weight_e,weight_p,weight_ph /) )
+      weight_max = maxval( (/weight_e,weight_p,weight_ph,weight_a /) )
 
       ! compute the maximum probability of interaction with Thomson cross section
       ! the factor 2 acounts for relativistic dynamics in the collision :
@@ -404,11 +409,11 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
       P_max = 2*Pnu_C( 1D-6, 1.0_p_double, 1D-6, Coeff, weight_max )
 
       ! Maximum number of scattering macro-particles
-      NC_max = floor(P_max* (Ne+Np) * Nph)
-      if (rng % genrand_real1()<= (P_max* (Ne+Np) * Nph-NC_max)) NC_max=NC_max+1 ! random rounding preserving the probability
-      if ( NC_max>minval( (/Ne+Np,Nph /) ) ) then
+      NC_max = floor((P_max* (Ne+Np) * Nph)+(P_max* (Ne+Np) * Na))
+      if (rng % genrand_real1()<= (P_max* (Ne+Np) * (Nph+Na)-NC_max)) NC_max=NC_max+1 ! random rounding preserving the probability
+      if ( NC_max>minval( (/Ne+Np,Nph+Na /) ) ) then
         print*,'   ***   - warning -   ***   reduce timestep: collision frequency too high'
-        NC_max = minval( (/Ne+Np,Nph /) )
+        NC_max = minval( (/Ne+Np,Nph+Na /) )
       endif
 
         !write (48,*) NC_max
@@ -430,21 +435,26 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
         do i_buff=1,this%d_buff
           this%Shuf_ind_ep(i_buff) = i_buff
           this%Shuf_ind_ph(i_buff) = i_buff
+          this%Shuf_ind_a(i_buff) = i_buff
         enddo
 
         ! Shuffle the indexes for electrons and positrons
         call Knuth_shuffle(this%Shuf_ind_ep,1,Ne+Np)
         call Knuth_shuffle(this%Shuf_ind_ph,1,Nph)
+        call Knuth_shuffle(this%Shuf_ind_a,1,Na)
       endif
 
       ! Generate collision list
       do i = 1, NC_max
         ind_ph = this%index_ph( this%Shuf_ind_ph(i) )
+        ind_a = this%index_a( this%Shuf_ind_a(i) )
         Msk = this%Msk_ep( this%Shuf_ind_ep(i) )
 
         weight_max = 0.0_p_double
         k = photons%p(:, ind_ph )
+        !k2 = axions%p(:, ind_a )
         weight_max = photons%q(ind_ph)
+        !weight_max2 = axions%q(ind_a)
         select case (Msk)
         case (eph)
             ind_ep = this%index_e( this%Shuf_ind_ep(i) )
@@ -452,6 +462,17 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
             q = abs( electrons%q(ind_ep) )
             weight_max = maxval( (/ q, weight_max /) )
           case (pph)
+            if((Ne+Np>Ne) .or. (Ne+Np>Np)) this%Shuf_ind_ep(i) = this%Shuf_ind_ep(i)-Ne
+            ind_ep = this%index_p( this%Shuf_ind_ep(i) )
+            p = positrons%p(:, ind_ep )
+            q = abs( positrons%q(ind_ep) )
+            weight_max = maxval( (/ q, weight_max /) )
+          case (ea)
+            ind_ep = this%index_e( this%Shuf_ind_ep(i) )
+            p = electrons%p(:, ind_ep )
+            q = abs( electrons%q(ind_ep) )
+            weight_max = maxval( (/ q, weight_max /) )
+          case (pa)
             if((Ne+Np>Ne) .or. (Ne+Np>Np)) this%Shuf_ind_ep(i) = this%Shuf_ind_ep(i)-Ne
             ind_ep = this%index_p( this%Shuf_ind_ep(i) )
             p = positrons%p(:, ind_ep )
