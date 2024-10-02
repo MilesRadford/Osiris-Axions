@@ -23,8 +23,8 @@ module m_qed_coulomb
 ! Initially, we also consider constant axion mass
 ! Hence the cs only depends on the scattering angle (1 axis for the CDF table)
 
-! Total cross section is obtained from interpolation from the total cross-section table
 
+! Total cross section is obtained from interpolation from the total cross-section table
 
 ! Cumulative Distribution Function is a table
 
@@ -50,7 +50,14 @@ module m_qed_coulomb
       5.59285612e-28,  5.59420199e-28,  5.59525042e-28,  5.59606655e-28,  5.59670147e-28,  5.59719519e-28,  5.59757895e-28 &
       /) , (/ X!!! /) )
 
+!-----------------------------------------------------------------------------------------
+! Cumulative Distribution Function (Table)
+!-----------------------------------------------------------------------------------------
 
+   real(p_double), parameter, dimension(X!!!) :: prim_cdf_diff_cs = &
+      reshape( (/ &
+      5.59285612e-28,  5.59420199e-28,  5.59525042e-28,  5.59606655e-28,  5.59670147e-28,  5.59719519e-28,  5.59757895e-28 &
+      /) , (/ X!!! /) )
 
 !-----------------------------------------------------------------------------------------
 ! Bethe Heitler - General information
