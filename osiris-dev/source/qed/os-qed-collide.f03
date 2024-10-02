@@ -512,6 +512,7 @@ subroutine get_coll_listNTC( this,electrons,positrons,photons,axions,dt,sigma_co
       Ne = this%lst_e(i_cell+1)-this%lst_e(i_cell)
       Np = this%lst_p(i_cell+1)-this%lst_p(i_cell)
       Nph = this%lst_ph(i_cell+1)-this%lst_ph(i_cell)
+      Na = this%lst_a(i_cell+1)-this%lst_a(i_cell)
 
     endif
   enddo

@@ -1105,7 +1105,10 @@ subroutine advance_deposit_qed( this, emf, jay, tstep, t, no_co, options )
     call this % qed_group(i) % photons % advance( &
             this%qed_group(i)%electrons, &
             this%qed_group(i)%positrons, &
-            !this%qed_group(i)%axions, &
+            emf, dt( tstep ), 0, 1)
+    call this % qed_group(i) % axions % advance( &
+            this%qed_group(i)%electrons, &
+            this%qed_group(i)%positrons, &
             emf, dt( tstep ), 0, 1)
   enddo
   call end_event( pushev )
