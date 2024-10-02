@@ -12,6 +12,33 @@ module m_qed_coulomb
    private
 
 !-----------------------------------------------------------------------------------------
+! Primakoff - General information
+!-----------------------------------------------------------------------------------------
+
+! Considering Primakoff in the Sun. Cross-section (in vacuum) is given for a photon 
+! interacting with the Coulomb field of a proton target. 
+
+! The cs depends on proton mass, axion mass, and photon energy.
+! Proton mass and photon energy are constants (considering thermal photons at 1.3 keV)
+! Initially, we also consider constant axion mass
+! Hence the cs only depends on the scattering angle (1 axis for the CDF table)
+
+! Total cross-section is obtained (by integraion or tables?)
+
+! Cumulative Distribution Function is a table
+
+!-----------------------------------------------------------------------------------------
+! Cumulative Distribution Function (Define axes of the table)
+!-----------------------------------------------------------------------------------------
+
+! Discretisation of prim_theta axis (scattering angle), from -pi to pi with X!!! points
+   real(p_double), parameter, dimension(X!!!) :: axis_prim_theta = &
+      reshape( (/ &
+      4.23398096e+02, 5.45115343e+02, 7.01823507e+02, 9.03581677e+02, 1.16334070e+03, 1.49777448e+03 & 
+      /) , (/ X!!! /) )
+
+
+!-----------------------------------------------------------------------------------------
 ! Bethe Heitler - General information
 !-----------------------------------------------------------------------------------------
 
