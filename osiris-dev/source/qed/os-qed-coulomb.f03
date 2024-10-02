@@ -37,6 +37,8 @@ module m_qed_coulomb
       4.23398096e+02, 5.45115343e+02, 7.01823507e+02, 9.03581677e+02, 1.16334070e+03, 1.49777448e+03 & 
       /) , (/ X!!! /) )
 
+   integer, parameter        :: num_prim_theta = size(axis_k_bh)
+
 
 !-----------------------------------------------------------------------------------------
 ! Bethe Heitler - General information
