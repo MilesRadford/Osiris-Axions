@@ -21,12 +21,12 @@ module m_qed_coulomb
 ! The cs depends on proton mass, axion mass, and photon energy.
 ! Proton mass and photon energy are constants (considering thermal photons at 1.3 keV)
 ! Initially, we also consider constant axion mass
-! Hence the cs only depends on the scattering angle (1 axis for the CDF table)
+! Hence the cs only depends on the scattering angle (1 axis for the cs and CDF tables)
 
 
 ! Total cross section is obtained from interpolation from the total cross-section table
 
-! Cumulative Distribution Function is a table
+! Cumulative Distribution Function is also a table
 
 !-----------------------------------------------------------------------------------------
 ! (Defining axes of the tables)
@@ -42,7 +42,7 @@ module m_qed_coulomb
 
 
 !-----------------------------------------------------------------------------------------
-! Total cross - section (Table)
+! Total cross-section (Table)
 !-----------------------------------------------------------------------------------------
 
    real(p_double), parameter, dimension(500) :: prim_total_cs = &
