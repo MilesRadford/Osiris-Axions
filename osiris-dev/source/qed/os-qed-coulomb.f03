@@ -573,19 +573,19 @@ real(p_double), parameter, dimension(20) :: ct_cdf_ddiff_cs_Z_all = &
 !------------------------------------------------
 
    interface prim_cs
-      module procedure br_cs
+      module procedure prim_cs
    end interface
 
    interface prim_proba
-      module procedure br_proba
+      module procedure prim_proba
    end interface
 
    interface prim_cdf
-      module procedure br_cdf
+      module procedure prim_cdf
    end interface
 
    interface prim_spec
-      module procedure br_spec
+      module procedure prim_spec
    end interface
 
 !------------------------------------------------
