@@ -1393,4 +1393,47 @@ contains
 
    end subroutine ct_spec_posi_general
 
+
+
+!---------------------------------------------------------------------
+! Axion cs, proba, cdf, and spec subtoutines 
+!---------------------------------------------------------------------
+
+   subroutine prim_cs(theta, cs)
+      implicit none
+      real(p_double), intent(in) :: theta      ! Scattering angle
+      real(p_double), intent(out) :: cs        ! Output cross-section
+      
+      ! Interpolate the total cross-section based on the angle
+      ! Using a pre-built table prim_total_cs and axis_prim_theta for interpolation
+      
+      integer :: i
+      real(p_double) :: interp_factor
+      
+      ! Simple linear interpolation over the axis_prim_theta array
+      do i = 1, num_prim_theta - 1
+         if (theta >= axis_prim_theta(i) .and. theta <= axis_prim_theta(i+1)) then
+            interp_factor = (theta - axis_prim_theta(i)) / (axis_prim_theta(i+1) - axis_prim_theta(i))
+            cs = prim_total_cs(i) + interp_factor * (prim_total_cs(i+1) - prim_total_cs(i))
+            return
+         endif
+      end do
+   
+      ! If out of range, set cross-section to 0 (or some minimum)
+      ! We should later write a code here for aborting and asking for an angle between -pi and pi
+      cs = 0.0
+   end subroutine prim_cs
+
+
+
+
+
+
+
+!---------------------------------------------------------------------
+! End of Axion-related subroutines
+!---------------------------------------------------------------------
+
+
+
 end module m_qed_coulomb
