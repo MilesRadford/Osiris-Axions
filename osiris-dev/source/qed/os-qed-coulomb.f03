@@ -1399,6 +1399,9 @@ contains
 ! Axion cs, proba, cdf, and spec subtoutines 
 !---------------------------------------------------------------------
 
+! Subroutine for getting the Primakoff total cross-section 
+! by interpolating from the Primakoff cs tables above.
+
    subroutine prim_cs(theta, cs)
       implicit none
       real(p_double), intent(in) :: theta      ! Scattering angle
@@ -1423,6 +1426,34 @@ contains
       ! We should later write a code here for aborting and asking for an angle between -pi and pi
       cs = 0.0
    end subroutine prim_cs
+
+
+
+! Subroutine for calculating the probability that an event
+! of creating an axion via Primakoff happens
+
+   subroutine prim_proba(theta, ni, dt, omega_p, n_p, factor_mult, proba)
+   Implicit none
+
+      real(p_double), intent(in) :: theta, ni, dt, omega_p, n_p, factor_mult
+      real(p_double), intent(inout) :: proba
+
+      real(p_double) :: total_cs, crit_density, normalization, var 
+      real(p_double), parameter :: cl    = 299792458.0     ! m/s
+
+      ! Normalization
+      crit_density = n_p * 1.d6
+      normalization = crit_density * cl / omega_p
+
+      ! Cross-section in m^2 >> It’s not in m^2: the tables are in eVs and should be converted to m^2 later
+      call prim_cs(theta, total_cs)
+
+
+      var = total_cs * ni * dt * normalization
+
+      ! Probability of an event
+      proba = factor_mult * (1.0d0 - EXP(-var))
+   end subroutine prim_proba
 
 
 
