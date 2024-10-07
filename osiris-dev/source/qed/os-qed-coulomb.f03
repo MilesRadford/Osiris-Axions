@@ -1457,6 +1457,24 @@ contains
 
 
 
+!Subroutine for getting the CDF 
+
+   subroutine prim_cdf(i, cdf)
+
+      implicit none
+      integer,  intent(in)                            :: i
+      real(p_double), dimension(num_theta_prim), intent(inout) :: cdf
+
+      cdf = prim_cdf_diff_cs(1:num_theta_prim,i)
+
+   end subroutine prim_cdf
+
+
+
+
+
+
+
 
 
 
