@@ -1465,7 +1465,7 @@ contains
       integer,  intent(in)                            :: i
       real(p_double), dimension(num_theta_prim), intent(inout) :: cdf
 
-      cdf = prim_cdf_diff_cs(1:num_theta_prim,i)
+      cdf = prim_cdf_diff_cs(i)
 
    end subroutine prim_cdf
 
