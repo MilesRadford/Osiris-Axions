@@ -1,0 +1,34 @@
+name: gcc-10
+
+on: [pull_request, workflow_dispatch]
+
+jobs :
+  run_build_tests:
+    name: >
+      ${{ matrix.dimension }}d,
+      ${{ matrix.precision }},
+      ${{ matrix.type }}
+    runs-on : self-hosted
+
+    strategy:
+      fail-fast: false
+      matrix:
+        dimension: [1, 2, 3]
+        type: ["production", "debug"]
+        precision: ["SINGLE", "DOUBLE"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure OSIRIS
+      run: >
+        docker run --rm -v $(pwd):/project
+        ahelm/hpc_compiletools_gcc:10
+        ./configure
+        -s docker.hpc_compiletools_gcc
+        -t ${{ matrix.type }}
+        -d ${{ matrix.dimension }}
+    - name: Build OSIRIS
+      run: >
+        docker run --rm -v $(pwd):/project
+        ahelm/hpc_compiletools_gcc:10
+        make PRECISION=${{ matrix.precision }}
