@@ -1471,6 +1471,53 @@ contains
 
 
 
+subroutine prim_spec(theta, axion_energy)
+   implicit none
+
+   ! Input/Output Variables
+   real(p_double), intent(out) :: theta        ! Output scattering angle
+   real(p_double), intent(out) :: axion_energy ! Output axion energy (based on the scattering angle)
+
+   ! Local Variables
+   integer :: i, i1, i2, j, j1, j2
+   real(p_double) :: r, diff, weight
+   real(p_double), dimension(num_prim_theta) :: cdf
+
+   ! Get the cumulative distribution function (CDF) for the Primakoff process
+   cdf = prim_cdf_diff_cs
+
+   ! Draw a random number r between 0 and 1
+   call random_number(r)
+
+   ! Find the corresponding angle (theta) based on the random number and the CDF
+   ! Search for the index in the CDF that matches the random value r
+   do j = 1, num_prim_theta
+      diff = r - cdf(j)
+      if (diff .lt. 0.0d0) then
+         j1 = j - 1
+         j2 = j
+         exit
+      else if (diff .eq. 0.0d0) then
+         j1 = j
+         j2 = j
+         exit
+      endif
+   end do
+
+   ! Interpolate the scattering angle (theta) based on the indices j1 and j2
+   if (j1 .eq. j2) then
+      weight = 1.0d0
+   else
+      weight = (cdf(j2) - r) / (cdf(j2) - cdf(j1))
+   endif
+
+   theta = weight * axis_prim_theta(j1) + (1.0d0 - weight) * axis_prim_theta(j2)
+
+   ! Calculate the axion energy based on the scattering angle (for now assume it depends directly on the angle)
+   ! Placeholder: axion energy could be a function of theta (simple linear relation assumed here)
+   axion_energy = 1.0d0 + 0.1d0 * theta  ! Adjust this formula as necessary based on the physics of the process
+
+end subroutine prim_spec
 
 
 
