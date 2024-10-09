@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" version="24.7.17">
   <diagram name="Page-1" id="HhWs0j3t2sD9-UhU-f3X">
-    <mxGraphModel dx="1837" dy="2103" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2653" dy="2549" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -33,6 +33,12 @@
             <mxPoint x="390" y="310" as="sourcePoint" />
             <mxPoint x="440" y="260" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-10" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-betheheitler&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="1070" width="150" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-11" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-photons-define&amp;nbsp;&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="1070" width="150" height="130" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
