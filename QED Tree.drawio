@@ -1,11 +1,20 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" version="24.7.17">
   <diagram name="Page-1" id="HhWs0j3t2sD9-UhU-f3X">
-    <mxGraphModel dx="5956" dy="931" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="8230" dy="2173" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-179" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-178" target="THCGzzuzk-K5U6UD1SbX-173">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-180" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-178" target="THCGzzuzk-K5U6UD1SbX-174">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-178" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-2925" y="4500" width="665" height="190" as="geometry" />
+        </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-157" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-3900" y="3200" width="350" height="480" as="geometry" />
+          <mxGeometry x="-3900" y="3200" width="350" height="570" as="geometry" />
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-1" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-qed-coulomb:&lt;/b&gt;&lt;/font&gt;&lt;div&gt;axis_prim_theta (table)&lt;br&gt;&lt;div&gt;prim_cs (table)&lt;/div&gt;&lt;div&gt;prim_cdf (table)&lt;/div&gt;&lt;div&gt;prim_cs (SR)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;prim_proba (SR)&lt;/div&gt;&lt;div&gt;prim_cdf (SR)&lt;/div&gt;&lt;div&gt;prim_spec (SR)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#80FF00;" vertex="1" parent="1">
           <mxGeometry x="-3300" y="890" width="150" height="130" as="geometry" />
@@ -346,16 +355,16 @@
         <mxCell id="THCGzzuzk-K5U6UD1SbX-123" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-116" target="THCGzzuzk-K5U6UD1SbX-119">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-116" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-qed-coulomb:&lt;/b&gt;&lt;/font&gt;&lt;div&gt;axis_prim_theta (table)&lt;br&gt;&lt;div&gt;prim_cs (table)&lt;/div&gt;&lt;div&gt;prim_cdf (table)&lt;/div&gt;&lt;div&gt;prim_cs (SR)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;prim_proba (SR)&lt;/div&gt;&lt;div&gt;prim_cdf (SR)&lt;/div&gt;&lt;div&gt;prim_spec (SR)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#80FF00;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-116" value="&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;os-qed-coulomb&lt;/font&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;:&lt;/span&gt;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;axis_prim_theta (table)&lt;br&gt;&lt;div&gt;prim_cs (table)&lt;/div&gt;&lt;div&gt;prim_cdf (table)&lt;/div&gt;&lt;div&gt;prim_cs (SR)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;prim_proba (SR)&lt;/div&gt;&lt;div&gt;prim_cdf (SR)&lt;/div&gt;&lt;div&gt;prim_spec (SR)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#80FF00;" vertex="1" parent="1">
           <mxGeometry x="-3160" y="3360" width="200" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-117" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-spec-push-qed&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-117" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-spec-push-qed&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;" vertex="1" parent="1">
           <mxGeometry x="-2840" y="3360" width="200" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-118" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-axions&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-118" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-axions&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
           <mxGeometry x="-2840" y="3000" width="200" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-119" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-photons&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-119" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-photons&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
           <mxGeometry x="-2840" y="3720" width="200" height="160" as="geometry" />
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-124" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;advance_axions&lt;/b&gt;&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
@@ -416,10 +425,10 @@
             <mxPoint x="-1950" y="3940" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-135" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-photons-define&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-135" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-photons-define&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
           <mxGeometry x="-2150" y="3720" width="200" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-136" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-axions-define&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-136" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-axions-define&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
           <mxGeometry x="-2150" y="3000" width="200" height="160" as="geometry" />
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-137" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-124" target="THCGzzuzk-K5U6UD1SbX-136">
@@ -429,9 +438,9 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-138" value="os-qed-coulomb ---&amp;gt;&amp;nbsp; bremsstrahlung_emission,trident_coul_pair_creation --&amp;gt;&amp;nbsp;dudt_boris_qed --&amp;gt;set_dudt_spec_qed" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-2880" y="3540" width="630" height="20" as="geometry" />
+          <mxGeometry x="-3190" y="3320" width="630" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-139" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;os-spec-define-qed&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;" vertex="1" parent="1">
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-139" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-spec-define-qed&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;" vertex="1" parent="1">
           <mxGeometry x="-2150" y="3360" width="200" height="160" as="geometry" />
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-140" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-126" target="THCGzzuzk-K5U6UD1SbX-139">
@@ -441,10 +450,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-141" value="os-qed-coulomb --&amp;gt; create_pairs_betheheitler --&amp;gt;&amp;nbsp;advance_photons" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-2880" y="3900" width="370" height="20" as="geometry" />
+          <mxGeometry x="-2900" y="4800" width="940" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="THCGzzuzk-K5U6UD1SbX-142" value="NEEDS TO BE DONE" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-2880" y="3180" width="390" height="20" as="geometry" />
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-142" value="NEEDS TO BE DONE" style="whiteSpace=wrap;html=1;fillColor=#FF3333;" vertex="1" parent="1">
+          <mxGeometry x="-3070" y="2960" width="390" height="20" as="geometry" />
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-150" value="advance_photons" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;rotation=90;" vertex="1" parent="1">
           <mxGeometry x="-2010" y="4000" width="120" height="20" as="geometry" />
@@ -469,6 +478,70 @@
         </mxCell>
         <mxCell id="THCGzzuzk-K5U6UD1SbX-158" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Shapes key&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" vertex="1" parent="1">
           <mxGeometry x="-3845" y="3220" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-159" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;advance_photons --&amp;gt; t_photons&amp;nbsp;&lt;/font&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-2370" y="3680" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-160" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-135" target="THCGzzuzk-K5U6UD1SbX-161">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="-1860" y="3890" as="sourcePoint" />
+            <mxPoint x="-1730" y="3910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-161" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;t_photons&lt;/b&gt;&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-1800" y="3720" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-162" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Type&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-3785" y="3660" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-163" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;t_photons was used as a class in&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;os-qed-collide&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;os-photons&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;advance_photons in os-photons!!&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;photons-diagnostic&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;photons-define&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;span style=&quot;color: rgb(31, 35, 40); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; text-align: start; text-wrap: wrap; background-color: rgb(246, 248, 250);&quot;&gt;os-particles-qed&lt;/span&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(31, 35, 40); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; font-weight: 600; text-align: start; text-wrap: wrap; background-color: rgb(246, 248, 250);&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;and as a qed group in&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(31, 35, 40); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; text-align: start; text-wrap: wrap; background-color: rgb(246, 248, 250);&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;os-particles-qed&lt;/font&gt;&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="-1800" y="3900" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-164" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-125" target="THCGzzuzk-K5U6UD1SbX-161">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1950" y="3790" as="sourcePoint" />
+            <mxPoint x="-1900" y="3740" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-2395" y="3630" />
+              <mxPoint x="-2130" y="3580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-165" value="t_photons defined here; its the most important outcome of this module" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="-2110" y="3816" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-166" value="m_photons_define = t_photons" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-1960" y="3835" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-170" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-168" target="THCGzzuzk-K5U6UD1SbX-169">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-168" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-photons-define&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="-2900" y="4520" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-169" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;t_photons&lt;/b&gt;&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-2490" y="4520" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-171" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;How&#39;s advance_photons in os-photons different than advance_photons in os-photons-define?&amp;nbsp;&lt;/font&gt;&lt;div&gt;&lt;font size=&quot;3&quot;&gt;Are they both the same?&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#000000;fillColor=#FF3333;" vertex="1" parent="1">
+          <mxGeometry x="-2680" y="4240" width="770" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-175" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-172" target="THCGzzuzk-K5U6UD1SbX-173">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-172" value="&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;os-qed-coulomb&lt;/font&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;:&lt;/span&gt;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;axis_prim_theta (table)&lt;br&gt;&lt;div&gt;prim_cs (table)&lt;/div&gt;&lt;div&gt;prim_cdf (table)&lt;/div&gt;&lt;div&gt;prim_cs (SR)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;prim_proba (SR)&lt;/div&gt;&lt;div&gt;prim_cdf (SR)&lt;/div&gt;&lt;div&gt;prim_spec (SR)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#80FF00;" vertex="1" parent="1">
+          <mxGeometry x="-2900" y="4850" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-176" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="THCGzzuzk-K5U6UD1SbX-173" target="THCGzzuzk-K5U6UD1SbX-174">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-173" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;os-photons&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="-2495" y="4850" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-174" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;advance_photons&lt;/b&gt;&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-2170" y="4850" width="210" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="THCGzzuzk-K5U6UD1SbX-177" value="os-qed-coulomb --&amp;gt; create_pairs_betheheitler --&amp;gt;&amp;nbsp;advance_photons" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-3050" y="3690" width="370" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
