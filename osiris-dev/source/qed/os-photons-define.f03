@@ -50,6 +50,12 @@ type, extends( t_species_qed ) :: t_photons
   real( p_double ) :: weight_pairs_bh = 0.0_p_double
   real( p_double ) :: energy_pairs_bh = 0.0_p_double
 
+  ! Number of Axions created 
+  integer :: num_axions_primakoff = 0
+  real( p_double ) :: weight_axions_primakoff = 0.0_p_double
+  real( p_double ) :: energy_axions_primakoff = 0.0_p_double
+
+
   ! Additional diagnostics
   integer :: ndump_fac_pairs
 
