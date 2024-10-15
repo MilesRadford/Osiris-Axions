@@ -163,35 +163,16 @@ interface
 end interface
 
 
-! The below interface doesn't look correct
-!interface 
-!  subroutine report_axions( this, no_co, tstep, t )
-!  
-!    import t_photons, t_node_conf, t_time_step, p_double
-!
-!    class( t_photons ),    intent(in) :: this
-!    
-!    class( t_node_conf ),  intent(in) :: no_co
-!    type( t_time_step ),   intent(in) :: tstep
-!    real(p_double),        intent(in) :: t
-!
-!  end subroutine
-!end interface
-
 interface 
-  subroutine report_axions( this, emf, g_space, grid, no_co, tstep, t, send_msg, recv_msg )
+  subroutine report_axions( this, no_co, tstep, t )
   
-    import t_axions, t_emf, t_space, t_grid, t_node_conf, t_time_step, p_double, t_vdf_msg
+    import t_photons, t_node_conf, t_time_step, p_double
 
-    class( t_axions ),  intent(inout) :: this
+    class( t_photons ),    intent(in) :: this
     
-    class( t_emf ),     intent(inout) :: emf
-    type( t_space ),       intent(in) :: g_space
-    class( t_grid ),       intent(in) :: grid
     class( t_node_conf ),  intent(in) :: no_co
     type( t_time_step ),   intent(in) :: tstep
     real(p_double),        intent(in) :: t
-    type(t_vdf_msg), dimension(2), intent(inout) :: send_msg, recv_msg
 
   end subroutine
 end interface
