@@ -87,7 +87,9 @@ contains
   procedure :: get_energy      => get_energy_photons
   procedure :: get_energy_pairs => get_energy_pairs
   procedure :: mergedel        => mergedel_photons
-  
+  procedure :: report_axios    => report_axions_photons
+  procedure :: get_energy_axions => get_energy_axions
+
   procedure :: read_checkpoint  => read_checkpoint_photons
   procedure :: write_checkpoint => write_checkpoint_photons
 
