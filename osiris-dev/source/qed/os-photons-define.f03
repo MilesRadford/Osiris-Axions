@@ -162,6 +162,23 @@ interface
   end subroutine
 end interface
 
+
+
+! The below interface doesn't look correct
+interface 
+  subroutine report_axions( this, no_co, tstep, t )
+  
+    import t_photons, t_node_conf, t_time_step, p_double
+
+    class( t_photons ),    intent(in) :: this
+    
+    class( t_node_conf ),  intent(in) :: no_co
+    type( t_time_step ),   intent(in) :: tstep
+    real(p_double),        intent(in) :: t
+
+  end subroutine
+end interface
+
 public :: t_photons
 
 contains
