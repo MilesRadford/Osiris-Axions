@@ -56,6 +56,9 @@ type, extends( t_species_qed ) :: t_photons
   ! pair production flag
   logical :: if_pairprod
 
+  ! axion-primakoff production flag
+  logical :: if_primakoff
+
   real( p_double ) :: pp_chi_cutoff
 
   ! Bethe Heitler pair creation
