@@ -437,6 +437,68 @@ end function get_energy_photons
 !---------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
+! Return axion energy on local node, calculating it if need be
+!-----------------------------------------------------------------------------------------
+function get_energy_axions( this )
+
+  implicit none
+
+  class( t_axions ), intent(in) :: this
+  real( p_double ) :: get_energy_axions
+
+  integer :: i
+  real( p_double ) :: energy, u2, kin, cell_volume
+  
+  ! Check if energy was calculated during the push (time-centered), otherwise
+  ! calculate it here
+  if ( this % energy(1) < 0 ) then
+     ! Energy not available, recalculate it
+     energy = 0
+
+     !$omp parallel do private(u2, kin) reduction(+ : energy)
+     do i = 1, this%num_par
+        u2 = this%p(1,i)**2 + this%p(2,i)**2 + this%p(3,i)**2
+        kin = sqrt( u2 )
+        energy = energy + this%q(i) * kin
+     enddo
+     !$omp end parallel do
+
+     ! Store value so it can be reused
+     this%energy(1) = energy
+   #ifdef _OPENMP
+     do i = 2, ubound(this % energy, 1)
+        this % energy(i) = 0
+     enddo
+   #endif
+
+  else
+
+     ! Get energy calculated previously
+     energy = this % energy(1)
+
+   #ifdef _OPENMP
+     ! If doing a multi-threaded run, add contribution from all threads
+     do i = 2, ubound(this % energy, 1)
+        energy = energy + this % energy(i)
+     enddo
+   #endif
+
+  endif
+
+  ! Normalize to cell size and charge over mass ratio
+  cell_volume = this % dx(1)
+  do i = 2, p_x_dim
+    cell_volume = cell_volume * this % dx(i)
+  enddo
+  
+  get_energy_axions = energy * cell_volume
+
+end function get_energy_axions
+!---------------------------------------------------------------------------------------------------
+
+
+
+!-----------------------------------------------------------------------------------------
 ! Return pair energy on local node
 !-----------------------------------------------------------------------------------------
 function get_energy_pairs( this, bethe_heitler )
