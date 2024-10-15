@@ -299,6 +299,12 @@ subroutine init_photons( this, sp_id, interpolation, grid_center, grid, g_space,
     this%weight_pairs_bh = 0.0
     this%energy_pairs_bh = 0.0
 
+    ! initially no axions have been created
+    this%num_axions_primakoff = 0
+    this%weight_axions_primakoff = 0.0
+    this%energy_axions_primakoff = 0.0
+
+
     ! setup emission events diagnostic
     if (this%ndump_fac_n_emit > 0) then
         ! We set guard cells to one so that the dlb communication doesn't error out
