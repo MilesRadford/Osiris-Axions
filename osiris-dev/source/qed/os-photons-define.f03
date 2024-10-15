@@ -59,6 +59,9 @@ type, extends( t_species_qed ) :: t_photons
   ! Additional diagnostics
   integer :: ndump_fac_pairs
 
+  integer :: ndump_fac_axions
+
+
   ! pair production flag
   logical :: if_pairprod
 
