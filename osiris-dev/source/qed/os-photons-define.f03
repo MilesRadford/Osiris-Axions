@@ -704,6 +704,16 @@ end subroutine inject_photons
     restart_io_rd( this%energy_pairs_bh, restart_handle, ierr )
     CHECK_ERROR( ierr, err_msg, p_err_rstrd )
 
+    restart_io_rd( this%num_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstrd )
+  
+    restart_io_rd( this%weight_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstrd )
+  
+    restart_io_rd( this%energy_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstrd )
+
+
   end subroutine read_checkpoint_photons
   
   !-----------------------------------------------------------------------------------------
@@ -745,6 +755,16 @@ end subroutine inject_photons
   
     restart_io_wr( this%energy_pairs_bh, restart_handle, ierr )
     CHECK_ERROR( ierr, err_msg, p_err_rstwrt )
+
+    restart_io_wr( this%num_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstwrt )
+  
+    restart_io_wr( this%weight_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstwrt )
+  
+    restart_io_wr( this%energy_axions_primakoff, restart_handle, ierr )
+    CHECK_ERROR( ierr, err_msg, p_err_rstwrt )
+
 
   end subroutine write_checkpoint_photons
   
