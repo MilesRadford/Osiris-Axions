@@ -433,3 +433,95 @@ subroutine report_pairs_photons( this, no_co, tstep, t )
 
 end subroutine report_pairs_photons
 !---------------------------------------------------------------------------------------------------
+
+
+
+
+
+!-----------------------------------------------------------------------------------------
+! Report on number of axions created
+!------------------------------------------------------------------------------------------
+subroutine report_axions( this, no_co, tstep, t )
+!-----------------------------------------------------------------------------------------
+    use m_system
+    use m_photons_define, only: t_photons
+    use m_node_conf
+    use m_units
+    use m_time_step
+    use m_parameters, only: file_id_parene, p_err_diagfile, path_hist
+    use stringutil, only: idx_string
+
+    implicit none
+
+    ! dummy variables
+    class( t_photons ),       intent(in) :: this
+    class( t_node_conf ),         intent(in) :: no_co
+    type( t_time_step ),          intent(in) :: tstep
+    real(p_double),               intent(in) :: t
+
+    ! local variables
+    character(80)   :: path, full_name
+    character(2)    :: ch_sp_id
+
+
+    integer :: ierr
+    integer( p_int64 ) :: total_axions
+    real( p_double ):: weight_axions
+    real( p_double ) :: energy_axions
+
+
+    ! Axion creation diagnostics
+    if (test_if_report(tstep, this%ndump_fac_axions)) then
+
+
+        ! get the total number of particles in the simulation box
+        total_axions = this%num_axions_primakoff
+        call reduce( no_co, total_axions, operation = p_sum)
+
+        weight_axions = this%weight_axions_primakoff
+        call reduce( no_co, weight_axions, operation = p_sum)
+
+        ! TRY CHANGING BETWEEN TRUE/FALSE
+        energy_axions = this % energy_axions_primakoff(.true.)
+        !energy_axions = this % energy_axions_primakoff(.false.)
+        call reduce( no_co, energy_axions, operation = p_sum)
+
+
+        if ( no_co%my_aid() == 1 ) then
+
+        ! prepare path and file names
+        ch_sp_id =  idx_string( this%sp_id, 2 )
+
+        path  = trim(path_hist)
+
+        full_name = trim(path) // 'pho' // trim(ch_sp_id) // '_axions'
+
+        ! Open file and position at the last record
+        if ( t == 0.0_p_double ) then
+            call mkdir( path, ierr )
+
+            open (unit=file_id_parene, file=full_name, status = 'REPLACE' , &
+            form='formatted')
+
+            ! Write Header
+            write(file_id_parene,'( A6, (1X, A15), 6(3X, A20) )') &
+                'Iter','Time    ','Total Axions (Prim)', 'Total Weight (Prim)', 'Total Energy (Prim)'
+
+        else
+            open (unit=file_id_parene, file=full_name, position = 'append', &
+            form='formatted')
+        endif
+
+        !  Writes the particle energies to file
+        write(file_id_parene, '( I6,1X,g15.8,1X,I14,es28.16,es28.16,I14,es28.16,es28.16 )') n(tstep), t, total_axions, &
+                        weight_axions, energy_axions
+        close(file_id_parene)
+
+        endif
+
+    endif
+
+
+
+end subroutine report_axions
+!-----------------------------------------------------------------------------------------
