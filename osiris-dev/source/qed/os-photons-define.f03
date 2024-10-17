@@ -27,6 +27,8 @@ use m_vdf_comm, only : t_vdf_msg
 use m_input_file
 use m_betheheitler
 
+use m_axions_define ! To access t_axions
+
 implicit none
 
 private
