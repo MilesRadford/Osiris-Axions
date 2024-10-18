@@ -494,7 +494,7 @@ subroutine report_axions( this, no_co, tstep, t )
 
         path  = trim(path_hist)
 
-        full_name = trim(path) // 'pho' // trim(ch_sp_id) // '_axions'
+        full_name = trim(path) // 'prim' // trim(ch_sp_id) // '_axions'
 
         ! Open file and position at the last record
         if ( t == 0.0_p_double ) then
