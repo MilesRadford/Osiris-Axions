@@ -23,7 +23,7 @@ implicit none
 private
 
 public advance_photons_1d, advance_photons_2d, advance_photons_3d, advance_photons_cyl_2d
-public create_pairs, ntrim_qed, create_pairs_betheheitler
+public create_pairs, ntrim_qed, create_pairs_betheheitler, create_axions_primakoff
 
 contains
 
