@@ -482,8 +482,8 @@ subroutine report_axions( this, no_co, tstep, t )
         call reduce( no_co, weight_axions, operation = p_sum)
 
         ! TRY CHANGING BETWEEN TRUE/FALSE
-        energy_axions = this % energy_axions_primakoff(.true.)
-        !energy_axions = this % energy_axions_primakoff(.false.)
+        energy_axions = this % get_energy_axions(.true.)
+        !energy_axions = this % get_energy_axions(.false.)
         call reduce( no_co, energy_axions, operation = p_sum)
 
 
