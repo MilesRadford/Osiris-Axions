@@ -473,7 +473,6 @@ subroutine report_axions( this, no_co, tstep, t )
     ! Axion creation diagnostics
     if (test_if_report(tstep, this%ndump_fac_axions)) then
 
-
         ! get the total number of particles in the simulation box
         total_axions = this%num_axions_primakoff
         call reduce( no_co, total_axions, operation = p_sum)
