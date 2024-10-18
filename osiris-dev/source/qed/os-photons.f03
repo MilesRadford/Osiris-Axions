@@ -744,7 +744,7 @@ end subroutine create_pairs
 
 
 !---------------------------------------------------------------------------------------------------
-  subroutine create_axions_primakoff( this, axions, emf, dt, i0, i1)
+  subroutine create_axions_primakoff( this, axions, dt, i0, i1)
 !---------------------------------------------------------------------------------------------------
 
 
