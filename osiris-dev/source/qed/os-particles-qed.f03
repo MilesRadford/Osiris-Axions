@@ -309,6 +309,7 @@ subroutine read_nml_qed_group_diag( this, input_file )
 
     ndump_fac_rad = 0
     ndump_fac_pairs = 0
+    ndump_fac_axions = 0 
 
     ndump_fac_radspect = 0
     radspect_emin = 1.957e-5
