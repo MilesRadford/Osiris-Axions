@@ -283,7 +283,7 @@ subroutine read_nml_qed_group_diag( this, input_file )
     class( t_qed_spec_group ), intent(inout) :: this
     class( t_input_file ), intent(inout) :: input_file
 
-    integer :: ierr, ndump_fac_rad, ndump_fac_pairs, ndump_fac_radspect, radspect_bins,     &
+    integer :: ierr, ndump_fac_rad, ndump_fac_pairs, ndump_fac_axions,  ndump_fac_radspect, radspect_bins,     &
               ndump_fac_radanglespect, radanglespect_bins, ndump_fac_n_emit, ndump_fac_chi, &
               chi_emit_nbins, ndump_fac_chi_emit, ndump_fac_radsphere, radsphere_nbins,     &
               ndump_fac_raddetector, raddetector_nbins, raddetector_dir, ndump_fac_pairs_from_elec
