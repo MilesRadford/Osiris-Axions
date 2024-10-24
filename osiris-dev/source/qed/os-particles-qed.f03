@@ -297,7 +297,7 @@ subroutine read_nml_qed_group_diag( this, input_file )
 
     character(len = 11) :: detector_direction
 
-    namelist /nl_qed_group_diag/ ndump_fac_rad, ndump_fac_pairs,                        &
+    namelist /nl_qed_group_diag/ ndump_fac_rad, ndump_fac_pairs, ndump_fac_axions,      &
                   ndump_fac_radspect, radspect_emin, radspect_emax, radspect_bins,      &
                   ndump_fac_radanglespect, radanglespect_bins, radanglespect_thresh,    &
                   ndump_fac_n_emit, ndump_fac_chi,                                      &
