@@ -746,6 +746,21 @@ end subroutine create_pairs
 !---------------------------------------------------------------------------------------------------
   subroutine create_axions_primakoff( this, axions, dt, i0, i1)
 !---------------------------------------------------------------------------------------------------
+    use m_species_define, only : t_species
+    use m_axions_define, only: t_axions
+    use m_species_comm, only : t_part_idx, remove_particles
+    use m_photons_diagnostics
+
+    implicit none
+
+    ! dummy variables
+
+    class( t_photons ),    intent(inout) :: this
+    class( t_axions ),    intent(inout) :: axions
+    real(p_double),   intent(in) :: dt
+    integer,   intent(in) :: i0, i1
+
+    integer :: i, pp, np, ptrcur
 
 
 
