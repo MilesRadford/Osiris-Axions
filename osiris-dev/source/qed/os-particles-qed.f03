@@ -426,6 +426,9 @@ subroutine read_nml_qed_group_diag( this, input_file )
     this % photons % ndump_fac_pairs = ndump_fac_pairs
     this % axions % ndump_fac_pairs = ndump_fac_pairs
 
+    ! emitted axions energy diagnostic
+    this % photons % ndump_fac_axions = ndump_fac_axions
+
     ! emission events diagnostic
     this % electrons % ndump_fac_n_emit = ndump_fac_n_emit
     this % positrons % ndump_fac_n_emit = ndump_fac_n_emit
