@@ -13,7 +13,7 @@ module m_primakoff
   use m_vdf_define
   use m_vdf
   use m_species_define
-  use m_species_define_qed 	! Not sure this is needed
+  use m_species_define_qed 	! don't think this is needed
 
 implicit none
 
