@@ -1,9 +1,90 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.3">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.4">
   <diagram name="Page-1" id="VRbGhbcaT4jTud78ZenN">
-    <mxGraphModel>
+    <mxGraphModel dx="2171" dy="2285" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-1" target="RWk9WnBIg7F_4jbduYXB-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-1" target="RWk9WnBIg7F_4jbduYXB-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-1" target="RWk9WnBIg7F_4jbduYXB-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-1" value="m_betheheitler" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+          <mxGeometry x="690" y="-30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-2" value="os-axions-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="-280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-3" value="os-photons-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="-30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-4" value="os-particles-qed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-5" target="RWk9WnBIg7F_4jbduYXB-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-5" value="m_bremsstrahlung" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+          <mxGeometry x="30" y="-30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-6" value="&lt;span style=&quot;color: rgb(31, 35, 40); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; text-align: start; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;os-spec-define-qed&lt;/font&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-7" target="RWk9WnBIg7F_4jbduYXB-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-7" value="m_trident_coul" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+          <mxGeometry x="30" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-8" value="&lt;span style=&quot;color: rgb(31, 35, 40); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; text-align: start; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;os-spec-define-qed&lt;/font&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="-30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-16" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="640" y="690" as="sourcePoint" />
+            <mxPoint x="640" y="-210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-17" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="360" as="sourcePoint" />
+            <mxPoint x="120" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-18" value="Section 1:&lt;div&gt;Initializing Bethe-Heitler Pair Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Bethe-Heitler&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&lt;/div&gt;&lt;div&gt;Getting the pairs energy&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="-60" width="260" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-19" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_betheheitler&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_betheheitler to&amp;nbsp;Read Bethe Heitler bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine init_betheheitler&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1185" y="170" width="270" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-20" target="RWk9WnBIg7F_4jbduYXB-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RWk9WnBIg7F_4jbduYXB-20" target="RWk9WnBIg7F_4jbduYXB-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-20" value="m_primakoff" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+          <mxGeometry x="690" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-21" value="os-photons-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-22" value="os-particles-qed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="770" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-25" value="Section 1:&lt;div&gt;Initializing Primakoff Axion Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;(setting up vdf with ion density for Primkoff) ??&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&lt;/div&gt;&lt;div&gt;Getting the axion energy&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1185" y="490" width="260" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-26" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1185" y="730" width="270" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-27" value="Useless repetition of the same lines in os-photons-define with no obvious reason" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1227.5" y="-290" width="175" height="80" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
