@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.6">
   <diagram name="Page-1" id="VRbGhbcaT4jTud78ZenN">
-    <mxGraphModel dx="1935" dy="1693" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1888" dy="1667" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -117,7 +117,7 @@
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-33" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1488" y="460" width="270" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-34" value="Useless repetition of the same lines in os-photons-define with no obvious reason" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-34" value="Repetition of the same lines in os-photons-define" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1488" y="640" width="175" height="80" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-35" value="os-photons-diagnostics" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
