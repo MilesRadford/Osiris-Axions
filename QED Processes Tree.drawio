@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.6">
   <diagram name="Page-1" id="VRbGhbcaT4jTud78ZenN">
-    <mxGraphModel dx="1805" dy="1622" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1935" dy="1693" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -52,7 +52,7 @@
         <mxCell id="RWk9WnBIg7F_4jbduYXB-19" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_betheheitler&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_betheheitler to&amp;nbsp;Read Bethe Heitler bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine init_betheheitler&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1546" y="-580" width="270" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="RWk9WnBIg7F_4jbduYXB-27" value="Useless repetition of the same lines in os-photons-define with no obvious reason" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="RWk9WnBIg7F_4jbduYXB-27" value="Repetition of the same lines in os-photons-define" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1546" y="-400" width="175" height="80" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-1" value="Section 1:&lt;div&gt;Initializing Bremsstrahlung emission Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Bremsstrahlung&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
