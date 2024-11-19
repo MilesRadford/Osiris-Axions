@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.6">
   <diagram name="Page-1" id="VRbGhbcaT4jTud78ZenN">
-    <mxGraphModel dx="3503" dy="2549" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2556" dy="2031" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -92,77 +92,77 @@
           <mxGeometry x="720" y="-130" width="175" height="125" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-26" value="m_primakoff" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
-          <mxGeometry x="978" y="720" width="120" height="70" as="geometry" />
+          <mxGeometry x="2523" y="678" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-27" value="os-axions-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1358" y="650" width="120" height="60" as="geometry" />
+          <mxGeometry x="2903" y="608" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-30">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1238" y="1170" as="targetPoint" />
+            <mxPoint x="2783" y="1128" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-30" target="P1NVYwnlqDmwQnl8Z5pu-35">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-30" value="os-photons-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1358" y="800" width="120" height="60" as="geometry" />
+          <mxGeometry x="2903" y="757.9999999999999" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-31" value="os-particles-qed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1358" y="500" width="120" height="60" as="geometry" />
+          <mxGeometry x="2903" y="458" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-33" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1488" y="460" width="270" height="140" as="geometry" />
+          <mxGeometry x="3033" y="418" width="270" height="140" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-34" value="Repetition of the same lines in os-photons-define" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1488" y="640" width="175" height="80" as="geometry" />
+          <mxGeometry x="3033" y="598" width="175" height="80" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-35" value="os-photons-diagnostics" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1548" y="1170" width="120" height="60" as="geometry" />
+          <mxGeometry x="3093" y="1128" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-36" value="os-photons&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1178" y="1170" width="120" height="60" as="geometry" />
+          <mxGeometry x="2723" y="1128" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-38" target="P1NVYwnlqDmwQnl8Z5pu-36">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1038" y="1140" />
-              <mxPoint x="1238" y="1140" />
+              <mxPoint x="2583" y="1098" />
+              <mxPoint x="2783" y="1098" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-38" value="os-qed-coulomb&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="978" y="990" width="120" height="60" as="geometry" />
+          <mxGeometry x="2523" y="947.9999999999999" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-39" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-26" target="P1NVYwnlqDmwQnl8Z5pu-31">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="1558" y="700" as="sourcePoint" />
-            <mxPoint x="1608" y="650" as="targetPoint" />
+            <mxPoint x="3103" y="658" as="sourcePoint" />
+            <mxPoint x="3153" y="608" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-40" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-26" target="P1NVYwnlqDmwQnl8Z5pu-27">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="1558" y="700" as="sourcePoint" />
-            <mxPoint x="1608" y="650" as="targetPoint" />
+            <mxPoint x="3103" y="658" as="sourcePoint" />
+            <mxPoint x="3153" y="608" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-41" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-26" target="P1NVYwnlqDmwQnl8Z5pu-30">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="1558" y="700" as="sourcePoint" />
-            <mxPoint x="1608" y="650" as="targetPoint" />
+            <mxPoint x="3103" y="658" as="sourcePoint" />
+            <mxPoint x="3153" y="608" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-42" value="Section 1:&amp;nbsp;&lt;div&gt;Primakoff General Information&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Subsequent sections:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Primakoff defining axes, tcs, and cdf as well as cdf, cs, probability, and spec subroutines.&amp;nbsp;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="792" y="957.5" width="175" height="125" as="geometry" />
+          <mxGeometry x="2337" y="915.4999999999999" width="175" height="125" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-43" value="Why not added in&lt;div&gt;os-photons-diagnostics?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1607" y="1082.5" width="150" height="40" as="geometry" />
+          <mxGeometry x="3152" y="1040.5" width="150" height="40" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-45" value="Section 1:&amp;nbsp;&lt;div&gt;Publicizing &quot;create_pairs_betheheitler&quot;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Subroutine &quot;&lt;span style=&quot;background-color: initial;&quot;&gt;create_pairs_betheheitler&quot;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;------&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 3:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Calling &quot;&lt;span style=&quot;background-color: initial;&quot;&gt;create_pairs_betheheitler&quot; in &quot;&lt;b&gt;advance_photons&lt;/b&gt;&quot;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1115" y="90" width="175" height="195" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-46" value="Section 1:&amp;nbsp;&lt;div&gt;Publicizing &quot;create_axions_primakoff&quot;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Subroutine &quot;create_axions_primakoff&lt;span style=&quot;background-color: initial;&quot;&gt;&quot;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;------&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 3:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Calling &quot;create_axions_primakoff&lt;span style=&quot;background-color: initial;&quot;&gt;&quot; in &quot;&lt;b&gt;advance_photons&lt;/b&gt;&quot;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="997" y="1150" width="175" height="195" as="geometry" />
+          <mxGeometry x="2858" y="1099.25" width="175" height="195" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-47" value="Section 1:&amp;nbsp;&lt;div&gt;Interpolation of Ion density of bethe-heitler&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;diagnosing number of bh pairs, their energy, and weighs.&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1555" y="101.25" width="175" height="117.5" as="geometry" />
@@ -185,83 +185,104 @@
             <mxPoint x="1305" y="-20" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-52" value="m_betheheitler" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
-          <mxGeometry x="2195" y="720" width="120" height="70" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-52" value="m_primakoff" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#007FFF;" vertex="1" parent="1">
+          <mxGeometry x="905" y="700" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-53" value="os-axions-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2706" y="650" width="120" height="60" as="geometry" />
+          <mxGeometry x="1416" y="630" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-54" value="os-photons-define" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2706" y="800" width="120" height="60" as="geometry" />
+          <mxGeometry x="1416" y="780" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-55" value="os-particles-qed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2706" y="500" width="120" height="60" as="geometry" />
+          <mxGeometry x="1416" y="480" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-56" value="&lt;div&gt;Section 1:&lt;/div&gt;&lt;div&gt;In &quot;t_photons&quot;, setting (num,energy,weigh)_pairs,&amp;nbsp;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;Section 2:&lt;div&gt;Initializing Bethe-Heitler Pair Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Initializing&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;(num,energy,weigh)_pairs&lt;/span&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 4:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Bethe-Heitler&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 5:&lt;/div&gt;&lt;div&gt;Function: get_energy_pairs (for BW and BH pairs)&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 6:&lt;/div&gt;&lt;div&gt;Reading/Writing checkpoint files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2837" y="730" width="270" height="280" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-56" value="&lt;div&gt;Section 1:&lt;/div&gt;&lt;div&gt;In &quot;t_photons&quot;, setting (num,energy,weigh)_axions,&amp;nbsp;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;Section 2:&lt;div&gt;Initializing Primakoff axion/photon Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Initializing&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;(num,energy,weigh)_axions&lt;/span&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 4:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 5:&lt;/div&gt;&lt;div&gt;Function: get_energy_axions&amp;nbsp;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 6:&lt;/div&gt;&lt;div&gt;Reading/Writing checkpoint files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1547" y="710" width="270" height="280" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-57" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_betheheitler&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_betheheitler to&amp;nbsp;Read Bethe Heitler bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine init_betheheitler&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2836" y="460" width="270" height="140" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-57" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1546" y="440" width="270" height="140" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-58" value="Repetition of the same lines in os-photons-define" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2836" y="640" width="175" height="80" as="geometry" />
+          <mxGeometry x="1546" y="620" width="175" height="80" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-59" value="os-photons-diagnostics" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2716" y="1170" width="120" height="60" as="geometry" />
+          <mxGeometry x="1426" y="1150" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-60" value="os-photons&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2276" y="1170" width="120" height="60" as="geometry" />
+          <mxGeometry x="986" y="1150" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-61" value="os-qed-coulomb&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; text-wrap-mode: nowrap;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22os-photons-diagnostics%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221020%22%20y%3D%22-10%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2195" y="940" width="120" height="60" as="geometry" />
+          <mxGeometry x="905" y="920" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-62" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-52" target="P1NVYwnlqDmwQnl8Z5pu-55">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2775" y="700" as="sourcePoint" />
-            <mxPoint x="2825" y="650" as="targetPoint" />
+            <mxPoint x="1485" y="680" as="sourcePoint" />
+            <mxPoint x="1535" y="630" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-63" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-52" target="P1NVYwnlqDmwQnl8Z5pu-53">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2775" y="700" as="sourcePoint" />
-            <mxPoint x="2825" y="650" as="targetPoint" />
+            <mxPoint x="1485" y="680" as="sourcePoint" />
+            <mxPoint x="1535" y="630" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-64" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-52" target="P1NVYwnlqDmwQnl8Z5pu-54">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2775" y="700" as="sourcePoint" />
-            <mxPoint x="2825" y="650" as="targetPoint" />
+            <mxPoint x="1485" y="680" as="sourcePoint" />
+            <mxPoint x="1535" y="630" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-65" value="Section 1:&amp;nbsp;&lt;div&gt;BH General Information&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Subsequent sections:&amp;nbsp;&lt;/div&gt;&lt;div&gt;BH defining axes, tcs, and cdf (tables) as well as cdf, cs, probability, and spec subroutines.&amp;nbsp;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2010" y="910" width="175" height="125" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-65" value="Section 1:&amp;nbsp;&lt;div&gt;Primakoff General Information&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Subsequent sections:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Primakoff defining axes, tcs, and cdf as well as cdf, cs, probability, and spec subroutines.&amp;nbsp;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="890" width="175" height="125" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-66" value="Section 1:&amp;nbsp;&lt;div&gt;Publicizing &quot;create_pairs_betheheitler&quot;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Subroutine &quot;&lt;span style=&quot;background-color: initial;&quot;&gt;create_pairs_betheheitler&quot;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;------&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 3:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Calling &quot;&lt;span style=&quot;background-color: initial;&quot;&gt;create_pairs_betheheitler&quot; in &quot;&lt;b&gt;advance_photons&lt;/b&gt;&quot;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2405" y="1130" width="175" height="195" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-66" value="Section 1:&amp;nbsp;&lt;div&gt;Publicizing &quot;create_axions_primakoff&quot;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Subroutine &quot;create_axions_primakoff&lt;span style=&quot;background-color: initial;&quot;&gt;&quot;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;------&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 3:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Calling &quot;create_axions_primakoff&lt;span style=&quot;background-color: initial;&quot;&gt;&quot; in &quot;&lt;b&gt;advance_photons&lt;/b&gt;&quot;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="1110" width="175" height="195" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-67" value="Section 1:&amp;nbsp;&lt;div&gt;Interpolation of Ion density of bethe-heitler&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;diagnosing number of bh pairs, their energy, and weighs.&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="2845" y="1141.25" width="175" height="117.5" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-67" value="Section 1:&amp;nbsp;&lt;div&gt;Interpolation of Ion density of primakoff&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;diagnosing number of axions, their energy, and weighs.&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1555" y="1121.25" width="175" height="117.5" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-68" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-61" target="P1NVYwnlqDmwQnl8Z5pu-60">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2545" y="1070" as="sourcePoint" />
-            <mxPoint x="2595" y="1020" as="targetPoint" />
+            <mxPoint x="1255" y="1050" as="sourcePoint" />
+            <mxPoint x="1305" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-69" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-54" target="P1NVYwnlqDmwQnl8Z5pu-60">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2545" y="1070" as="sourcePoint" />
-            <mxPoint x="2595" y="1020" as="targetPoint" />
+            <mxPoint x="1255" y="1050" as="sourcePoint" />
+            <mxPoint x="1305" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-70" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.428;entryY=-0.061;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="P1NVYwnlqDmwQnl8Z5pu-54" target="P1NVYwnlqDmwQnl8Z5pu-59">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="2545" y="1070" as="sourcePoint" />
-            <mxPoint x="2595" y="1020" as="targetPoint" />
+            <mxPoint x="1255" y="1050" as="sourcePoint" />
+            <mxPoint x="1305" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-71" value="&lt;div&gt;Section 1:&lt;/div&gt;&lt;div&gt;In &quot;t_photons&quot;, setting (num,energy,weigh)_axions,&amp;nbsp;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;Section 2:&lt;div&gt;Initializing Primakoff axion/photon Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Initializing&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;(num,energy,weigh)_axions&lt;/span&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 4:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 5:&lt;/div&gt;&lt;div&gt;Function: get_energy_axions&amp;nbsp;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 6:&lt;/div&gt;&lt;div&gt;Reading/Writing checkpoint files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1488" y="730" width="282" height="280" as="geometry" />
+          <mxGeometry x="3033" y="688" width="282" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-72" value="Section 1:&amp;nbsp;&lt;div&gt;Interpolation of Ion density of primakoff&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Section 2:&lt;/span&gt;&lt;/div&gt;&lt;div&gt;diagnosing number of axions, their energy, and weighs.&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="3225" y="1099.25" width="175" height="117.5" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-75" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="950" y="676" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-79" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="434" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-80" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="480" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-81" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="840" y="890" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-82" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="840" y="920" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-83" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="950" y="896" width="30" height="24" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
