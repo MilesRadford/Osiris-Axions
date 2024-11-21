@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="24.8.6">
   <diagram name="Page-1" id="VRbGhbcaT4jTud78ZenN">
-    <mxGraphModel dx="2556" dy="2031" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3238" dy="2404" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -197,11 +197,11 @@
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-55" value="os-particles-qed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1416" y="480" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-56" value="&lt;div&gt;Section 1:&lt;/div&gt;&lt;div&gt;In &quot;t_photons&quot;, setting (num,energy,weigh)_axions,&amp;nbsp;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;Section 2:&lt;div&gt;Initializing Primakoff axion/photon Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Initializing&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;(num,energy,weigh)_axions&lt;/span&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 4:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 5:&lt;/div&gt;&lt;div&gt;Function: get_energy_axions&amp;nbsp;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 6:&lt;/div&gt;&lt;div&gt;Reading/Writing checkpoint files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1547" y="710" width="270" height="280" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-56" value="&lt;div&gt;&lt;div&gt;use m_primakof&amp;nbsp;&lt;/div&gt;&lt;div&gt;+&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Section 1:&lt;/div&gt;&lt;div&gt;In &quot;t_photons&quot;, setting (num,energy,weigh)_axions,&amp;nbsp;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;Section 2:&lt;div&gt;Initializing Primakoff axion/photon Creation Info&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Initializing&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;(num,energy,weigh)_axions&lt;/span&gt;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 4:&amp;nbsp;&lt;/div&gt;&lt;div&gt;setting up vdf with ion density for Primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 5:&lt;/div&gt;&lt;div&gt;Function: get_energy_axions&amp;nbsp;&lt;/div&gt;&lt;div&gt;-------&lt;/div&gt;&lt;div&gt;Section 6:&lt;/div&gt;&lt;div&gt;Reading/Writing checkpoint files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1547" y="710" width="270" height="300" as="geometry" />
         </mxCell>
-        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-57" value="Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1546" y="440" width="270" height="140" as="geometry" />
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-57" value="&lt;div&gt;use m_primakof&amp;nbsp;&lt;/div&gt;&lt;div&gt;+&lt;/div&gt;Section 1:&lt;div&gt;&quot;procedurizing&quot;&amp;nbsp;init_primakoff&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 2:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Calling init_primakoff&amp;nbsp;to&amp;nbsp;Read Primakoff bloc in the input deck&lt;/div&gt;&lt;div&gt;------&lt;/div&gt;&lt;div&gt;Section 3:&amp;nbsp;&lt;/div&gt;&lt;div&gt;Subroutine&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;init_primakoff&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1546" y="410" width="270" height="170" as="geometry" />
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-58" value="Repetition of the same lines in os-photons-define" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1546" y="620" width="175" height="80" as="geometry" />
@@ -283,6 +283,39 @@
         </mxCell>
         <mxCell id="P1NVYwnlqDmwQnl8Z5pu-83" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
           <mxGeometry x="950" y="896" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-84" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="534" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-85" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="740" width="22.5" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-88" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1708.75" y="840" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-93" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="798" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-94" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1705" y="881" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-95" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1708.75" y="928" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-96" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1710" y="968" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-97" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1463.5" y="760" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-98" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1461" y="456" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-99" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1669.5" y="1121.25" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="P1NVYwnlqDmwQnl8Z5pu-100" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;align=center;fillColor=#2D9C5E;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.check" vertex="1" parent="1">
+          <mxGeometry x="1228" y="1114" width="25" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
