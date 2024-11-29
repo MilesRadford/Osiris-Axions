@@ -1,6 +1,0 @@
-#!/bin/sh
-
-tag="osiris."`date "+%Y%m%d"`
-tarball="$tag.tar.bz2"
-
-git archive master | bzip2 > $tarball
