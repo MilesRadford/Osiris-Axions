@@ -1,0 +1,11 @@
+Cpp:
+	
+	header chain:
+		os-cuda-input-deck.h:
+			Top level... has basic C++ includes and delcaration of abstract input deck class
+
+		os-cuda-state.h:
+			includes os-cuda-input-deck.h
+			declaration of translated Osiris state...
+				delcares the primary CUDA_STATE object (as extern)
+		

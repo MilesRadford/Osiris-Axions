@@ -1,0 +1,397 @@
+simulation
+{
+  algorithm = 'axion-hybrid',
+  omega_p0 = 4.37e17,
+}
+
+node_conf
+{
+  node_number(1:3) = 1, 1, 1,
+  if_periodic(1:3) = .false., .false., .false.,
+}
+
+grid
+{
+  nx_p(1:3) = 512, 64, 64,
+  coordinates = "cartesian",
+}
+
+time_step
+{
+  dt = 0.95,
+  ndump = 1,
+}
+
+space
+{
+  xmin(1:3) = -512.0, -64.0, -64.0,
+  xmax(1:3) =  512.0,  64.0,  64.0,
+  if_move(1:3) = .false., .false., .false.,
+}
+
+time
+{
+  tmin = 0.0,
+  tmax = 250.0,
+}
+
+el_mag_fld
+{
+  init_e0(1:3) = 0.0, 0.0, 0.0,
+  init_b0(1:3) = 0.0, 0.0, 0.0,
+}
+
+emf_bound
+{
+  type(1:2,1) = "open","open",
+  type(1:2,2) = "open","open",
+  type(1:2,3) = "open","open",
+}
+
+diag_emf
+{
+  ndump_fac = 1,
+  ndump_fac_ene_int = 1,
+  reports = "b2", "b3", "e2", "e3"
+}
+
+particles
+{
+  num_species = 1,
+  num_qed = 1,
+  interpolation = "linear",
+}
+
+qed_group
+{
+  if_damp_classical = .false.,
+  if_damp_qed = .false.,
+  if_pairprod = .false.,
+  qed_g_cutoff =  1.e10,
+  p_emit_cutoff = 0.0,
+}
+
+qed_group_diag
+{
+  ndump_fac_rad = 1000000000,
+  ndump_fac_pairs = 1000000000,
+}
+
+! ---------------- electrons ----------------
+species
+{
+  name = "electrons",
+  num_par_x(1:3) = 8, 8, 2,
+  num_par_max = 600000,
+  rqm = -1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist { uth(1:3)=0.0,0.0,0.0,  ufl(1:3)=0.0,0.0,0.0, }
+profile { density = 0.0d0, }
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- positrons (off) ----------------
+species
+{
+  name = "positrons",
+  num_par_x(1:3) = 1, 1, 1,
+  num_par_max = 1000,
+  rqm = 1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist { uth(1:3)=0.0,0.0,0.0,  ufl(1:3)=0.0,0.0,0.0, }
+profile { density = 0.0d0, }
+spe_bound { type(1:2,1)="reflecting","reflecting", type(1:2,2)="reflecting","reflecting",   type(1:2,3) = "reflecting","reflecting", type(1:2,2)="reflecting","reflecting", }
+
+diag_species { ndump_fac=0, ndump_fac_ene=0, ndump_fac_raw=0, reports="charge", raw_fraction=1.0, }
+
+! ---------------- photons (Primakoff emitters) ----------------
+species
+{
+  name = "photons",
+  num_par_x(1:3) = 4, 4, 2,         ! 16 ppc -> decent MC statistics
+  num_par_max = 300000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+! Mono-energetic beam along +x1: |p| = E_gamma / (m_e c^2)
+! 100 keV => |p| ≈ 100/511 ≈ 0.196
+udist { uth(1:3)=0.0,0.0,0.0,  ufl(1:3)=0.0,0.0,0.0, }
+profile { density = 0.0d0, }
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",   ! keep photons in the box so depletion is visible
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",   ! keep photons in the box so depletion is visible,
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- axions (QED-created) ----------------
+species
+{
+  name = "photons_axion",
+  num_par_x(1:3) = 1, 1, 1,
+  num_par_max = 5000000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+udist { uth(1:3)=0.0,0.0,0.0,  ufl(1:3)=0.0,0.0,0.0, }
+profile { density = 0.0d0, }
+
+! IMPORTANT: reflecting avoids delete/compact paths while debugging stability
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,   ! no charge/current diagnostics for axions
+  ndump_fac_ene = 1,       ! write axi01_ene every x steps
+  ndump_fac_raw = 1,
+  reports = "charge",       ! valid token; value doesn't matter since ndump_fac is huge
+  raw_fraction = 1.0,
+}
+
+! ---------------- ions ----------------
+species
+{
+  name = "ions",
+  num_par_x(1:3) = 2, 2, 2,
+  num_par_max = 80000,
+  rqm = 1836.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+udist { uth(1:3)=0.00,0.00,0.00,  ufl(1:3)=0.0,0.0,0.0, }
+profile { density = 0.0d0, }
+spe_bound { type(1:2,1)="reflecting","reflecting", type(1:2,2)="reflecting","reflecting",   type(1:2,3) = "reflecting","reflecting", type(1:2,2)="reflecting","reflecting", }
+
+diag_species { ndump_fac=1000000000, ndump_fac_ene=1000000000, ndump_fac_raw=0, reports="charge", raw_fraction=1.0, }
+
+qed_bremsstrahlung{ if_bremsstrahlung = .false.,
+
+Z_ion  = 13,
+
+ }
+
+
+! ============================================================
+! AXION MODULE SETTINGS (explicit, 3D deck)
+! ============================================================
+
+qed_axion_common
+{
+  Te_keV     = 1.3,        ! plasma temperature (keV)
+  w_axion    = 1.0e-6,    ! axion macroparticle weight
+  proba_mult = 1.0,        ! probability multiplier for MC sampling
+  lambda_cap = 20.0,       ! Coulomb log cap
+}
+
+qed_axion_compton
+{
+  if_compton = .false.,
+  if_inverse = .false.,
+  use_bose   = .true.,
+
+  g_ae  = 1.0e-13,
+
+  Te_keV = 1.3,
+  Z_ion  = 1,         ! <- integer
+  A_ion  = 1.0,
+  X_H    = 1.0,
+  i_ion(1) = 1,       ! <- array element (NOT scalar)
+
+  assume_neutral = .true.,
+  ne_factor      = 1.0,
+
+  lambda_cap = 20.0,
+  cs_scale   = 1.0,
+
+  proba_mult = 1.0,
+  w_axion    = 1.0e-36,
+
+  apply_feedback   = .false.,
+  fe_electrons     = 1.0,
+  evolve_Te        = .false.,
+  Te_floor_keV     = 0.0,
+  Te_ceil_keV      = 1.0e9,
+  Te_relax         = 1.0,
+  feedback_verbose = .false.,
+}
+
+
+qed_axion_bremsstrahlung
+{
+  if_bremsstrahlung = .false.,    ! enable/disable brems axion emission
+  if_inverse        = .false.,    ! enable inverse absorption if implemented
+  use_bose          = .true.,     ! use BE factors (inverse / detailed balance)
+
+  g_ae     = 1.0e-13,                 ! axion-electron coupling
+  ax_model = 2,                   ! axion model switch
+  cs_model = -1,                  ! cross-section model selector
+
+  Te_keV   = 1.3,                 ! temperature (keV) (set explicitly)
+  Z_ion    = 1,                 ! ion charge
+  A_ion    = 1,                 ! ion mass number
+  X_H      = 1,                 ! hydrogen mass fraction
+  i_ion(1)    = 1,                   ! ion species index
+
+  assume_neutral = .true.,        ! infer ne from ions if true
+  ne_factor      = 1,           ! multiplier on inferred ne
+
+  use_screening  = .true.,        ! enable screening corrections
+  lambda_cap     = 20.0,          ! Coulomb log cap
+  cs_scale       = 1.0,           ! overall scale factor on cross section
+  energy_damp    = .false.,           ! energy damping factor
+
+  proba_mult = 1.0,               ! MC sampling multiplier
+  w_axion    = 1.0e-38,           ! axion weight
+
+  include_ee = .true.,            ! include e-e brems contribution
+
+  apply_feedback   = .false.,     ! deposit emitted energy back into plasma
+  fe_electrons     = 1.0,         ! fraction of feedback to electrons
+  evolve_Te        = .false.,     ! evolve Te due to feedback
+  Te_floor_keV     = 0.0,         ! min Te if evolving
+  Te_ceil_keV      = 1.0e9,       ! max Te if evolving
+  Te_relax         = 1.0,         ! relaxation coefficient
+  feedback_verbose = .false.,     ! verbose feedback logging
+}
+
+
+
+qed_axion_primakoff
+{
+  if_primakoff = .false.,          ! enable Primakoff γ -> a conversion
+  if_inverse   = .false.,         ! inverse a -> γ if implemented
+
+  g_agamma = 10.0,                 ! axion-photon coupling (GeV^-1)
+
+  Te_keV = 1.3,                   ! plasma temperature (keV)
+
+  include_ee     = .true.,        ! include e-e contribution in screening if used
+  use_screening  = .true.,        ! enable screening
+  assume_neutral = .true.,        ! infer ne if desired
+  ne_factor      = 1.0,           ! multiplier for inferred ne
+
+  w_axion    = 1.0e-6,           ! axion weight
+  lambda_cap = 20.0,              ! Coulomb log cap
+  kappa_keV  = -1.0,              ! <0 => compute internally
+
+  Z_ion = 1,                    ! ion charge
+  i_ion(1) = 1,                      ! ion species index
+
+  debug = .true.,
+
+  photon_init        = 'none',  ! 'none' or 'planck' (resample photons once)
+  photon_Te_keV      = -1.0,      ! if >0, overrides Te_keV for photon bath
+  photon_quiet_pairs = .true.,    ! enforce ±p pairing for reduced noise
+  photon_nmax        = 200,       ! series truncation for sampling
+}
+
+axion_field
+{
+  ma          = 1,
+  g_agg       = 1,
+  init_type   = "sin_mode",
+  init_ampl   = 1.0e-7,
+  init_kx     = 1,
+  init_ky     = 0,
+  init_kz     = 0,
+  
+  bc_x_lower  = "open",
+  bc_x_upper  = "open",
+  bc_y_lower  = "open",
+  bc_y_upper  = "open",
+  bc_z_lower  = "open",
+  bc_z_upper  = "open",
+  
+  ndump_fac         = 10,
+  ndump_fac_ave     = 0,
+  ndump_fac_lineout = 0,
+  prec              = 4,
+  n_ave(1:3)        = 1, 1, 1,
+  n_tavg            = -1,
+  reports           = "phi", "ae2", "ae3", "ab2", "ab3", "edotb", "emsrcmag"
+}
+
+! ============================================================
+! Vacuum pump + seed pulses for a stronger-seeded Beyer search
+! ============================================================
+
+zpulse
+{
+  if_launch   = .true.,
+  a0          = 10.0,
+  omega0      = 0.25,
+  phase       = 0.0,
+  pol_type    = 0,
+  pol         = 0.0,
+  propagation = "forward",
+  direction   = 1,
+
+  lon_type    = "gaussian",
+  lon_fwhm    = 8000.0,
+  lon_range   = 16000.0,
+  lon_x0      = 0.0,
+
+  per_type    = "plane",
+
+  launch_time = 0.0,
+  no_div_corr = .false.,
+}
+
+zpulse
+{
+  if_launch   = .false.,
+  a0          = 0.002,
+  omega0      = 0.25,
+  phase       = 0.0,
+  pol_type    = 0,
+  pol         = 90.0,
+  propagation = "forward",
+  direction   = 1,
+
+  lon_type    = "gaussian",
+  lon_fwhm    = 8000.0,
+  lon_range   = 16000.0,
+  lon_x0      = 0.0,
+
+  per_type    = "plane",
+
+  launch_time = 0.0,
+  no_div_corr = .false.,
+}

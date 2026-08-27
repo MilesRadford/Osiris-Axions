@@ -1,0 +1,509 @@
+build_info = {
+  "version": "6062806-dirty",
+  "branch": "main",
+  "dimensions": "1",
+  "precision": "DOUBLE",
+  "build_type": "debug",
+  "system": "mybuild",
+  "build_tool": "make",
+  "build_flags": {
+    "FPP"  :"gcc -C -E -x assembler-with-cpp -DHDF5",
+    "FPPF" :"-DP_X_DIM=1 -DOS_REV=\"6062806-dirty\" -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_SSE -DENABLE_RAD -DENABLE_TILES -DENABLE_PGC -DENABLE_QED -DENABLE_SHEAR -DENABLE_CYLMODES -DENABLE_QEDCYL -DENABLE_RADCYL -DENABLE_OVERDENSE -DENABLE_OVERDENSE_CYL -DENABLE_NEUTRAL_SPIN -DENABLE_XXFEL -DENABLE_GR",
+    "F90"  :"mpif90 -ffree-line-length-0 -fno-range-check -g -O0 -fbacktrace -fcheck=all",
+    "F90F" :" -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/usr/lib/x86_64-1 -gnu/hdf5/serial/include -I/usr/lib/x86_64-1 -gnu/hdf5/serial",
+    "CF"   :"  -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_SSE",
+    "cc"   :"mpicc -msse4.1",
+    "LDF"  :" -L/usr/lib/x86_64-linux-gnu/hdf5/serial/lib -lm -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -L/usr/lib/x86_64-1 -gnu/openmpi/lib -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi ",
+   }
+}
+run_info = {
+  "input_deck_crc":          513202496.,
+  "input_deck": """
+! Block 1 / Q10 quick 1D Beyer-growth diagnostic deck
+!
+! Purpose:
+!   Fast post-patch 1D check for Beyer-type seeded-mode growth and cutoff behaviour.
+!   This is a deliberately faster diagnostic case, not the final paper-like long run.
+!
+! Design:
+!   - 1D geometry along x1.
+!   - Vacuum / zero-density plasma species, MC axion processes disabled.
+!   - One forward pump pulse, no static B0, no second EM seed pulse.
+!   - Coherent axion field seeded at n = 10.
+!   - Parameters target g*A0 = 0.03 and n_cut ~ 30 for this box.
+!
+! Run:
+!   ./osiris-1D.e Q10.1d
+!
+
+simulation
+{
+  algorithm = 'axion-hybrid',
+  omega_p0 = 4.37e17,
+}
+
+node_conf
+{
+  node_number(1:1) = 1,
+  if_periodic(1:1) = .false.,
+}
+
+grid
+{
+  nx_p(1:1) = 25000,
+  coordinates = "cartesian",
+}
+
+time_step
+{
+  dt = 1,
+  ndump = 1,
+}
+
+space
+{
+  xmin(1:1) = -25000.0,
+  xmax(1:1) =  25000.0,
+  if_move(1:1) = .false.,
+}
+
+time
+{
+  tmin = 0.0,
+  tmax = 20000.0,
+}
+
+el_mag_fld
+{
+  init_e0(1:3) = 0.0, 0.0, 0.0,
+  init_b0(1:3) = 0.0, 0.0, 0.0,
+}
+
+emf_bound
+{
+  type(1:2,1) = "open", "open",
+}
+
+diag_emf
+{
+  ndump_fac = 20,
+  ndump_fac_ene_int = 0,
+  reports = "e2", "e3", "b2", "b3",
+}
+
+particles
+{
+  num_species = 1,
+  num_qed = 1,
+  interpolation = "linear",
+}
+
+qed_group
+{
+  if_damp_classical = .false.,
+  if_damp_qed = .false.,
+  if_pairprod = .false.,
+  qed_g_cutoff =  1.e10,
+  p_emit_cutoff = 0.0,
+}
+
+qed_group_diag
+{
+  ndump_fac_rad = 1000000000,
+  ndump_fac_pairs = 1000000000,
+}
+
+! ---------------- electrons, QED-associated species ----------------
+species
+{
+  name = "electrons",
+  num_par_x(1:1) = 8,
+  num_par_max = 600000,
+  rqm = -1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting", "reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- positrons, QED-associated species ----------------
+! Required by the QED species-group reader even though the density is zero
+! and pair production is disabled.
+species
+{
+  name = "positrons",
+  num_par_x(1:1) = 1,
+  num_par_max = 1000,
+  rqm = 1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting", "reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 0,
+  ndump_fac_ene = 0,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- photons, QED-associated species ----------------
+! Required by the QED/axion-MC plumbing even though MC processes are disabled.
+species
+{
+  name = "photons",
+  num_par_x(1:1) = 1,
+  num_par_max = 300000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting", "reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- axions, QED-created species ----------------
+! This is the incoherent MC axion species, not the coherent axion field.
+! It is kept at zero density; coherent field dynamics are controlled by axion_field.
+species
+{
+  name = "photons_axion",
+  num_par_x(1:1) = 1,
+  num_par_max = 5000000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting", "reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- ions, one standard zero-density species ----------------
+! num_species = 1 above refers to this standard species.
+species
+{
+  name = "ions",
+  num_par_x(1:1) = 1,
+  num_par_max = 80000,
+  rqm = 1836.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting", "reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+qed_bremsstrahlung
+{
+  if_bremsstrahlung = .false.,
+  Z_ion = 13,
+}
+
+! ============================================================
+! AXION MC MODULE SETTINGS, all disabled for this field test
+! ============================================================
+
+qed_axion_common
+{
+  Te_keV     = 1.3,
+  w_axion    = 1.0e-6,
+  proba_mult = 1.0,
+  lambda_cap = 20.0,
+}
+
+qed_axion_compton
+{
+  if_compton = .false.,
+  if_inverse = .false.,
+  use_bose   = .true.,
+
+  g_ae  = 1.0e-13,
+
+  Te_keV = 1.3,
+  Z_ion  = 1,
+  A_ion  = 1.0,
+  X_H    = 1.0,
+  i_ion(1) = 1,
+
+  assume_neutral = .true.,
+  ne_factor      = 1.0,
+
+  lambda_cap = 20.0,
+  cs_scale   = 1.0,
+
+  proba_mult = 1.0,
+  w_axion    = 1.0e-36,
+
+  apply_feedback   = .false.,
+  fe_electrons     = 1.0,
+  evolve_Te        = .false.,
+  Te_floor_keV     = 0.0,
+  Te_ceil_keV      = 1.0e9,
+  Te_relax         = 1.0,
+  feedback_verbose = .false.,
+}
+
+qed_axion_bremsstrahlung
+{
+  if_bremsstrahlung = .false.,
+  if_inverse        = .false.,
+  use_bose          = .true.,
+
+  g_ae     = 1.0e-13,
+  ax_model = 2,
+  cs_model = -1,
+
+  Te_keV   = 1.3,
+  Z_ion    = 1,
+  A_ion    = 1,
+  X_H      = 1,
+  i_ion(1) = 1,
+
+  assume_neutral = .true.,
+  ne_factor      = 1,
+
+  use_screening  = .true.,
+  lambda_cap     = 20.0,
+  cs_scale       = 1.0,
+  energy_damp    = .false.,
+
+  proba_mult = 1.0,
+  w_axion    = 1.0e-38,
+
+  include_ee = .true.,
+
+  apply_feedback   = .false.,
+  fe_electrons     = 1.0,
+  evolve_Te        = .false.,
+  Te_floor_keV     = 0.0,
+  Te_ceil_keV      = 1.0e9,
+  Te_relax         = 1.0,
+  feedback_verbose = .false.,
+}
+
+qed_axion_primakoff
+{
+  if_primakoff = .false.,
+  if_inverse   = .false.,
+
+  g_agamma = 10.0,
+
+  Te_keV = 1.3,
+
+  include_ee     = .true.,
+  use_screening  = .true.,
+  assume_neutral = .true.,
+  ne_factor      = 1.0,
+
+  w_axion    = 1.0e-6,
+  lambda_cap = 20.0,
+  kappa_keV  = -1.0,
+
+  Z_ion = 1,
+  i_ion(1) = 1,
+
+  debug = .false.,
+
+  photon_init        = 'none',
+  photon_Te_keV      = -1.0,
+  photon_quiet_pairs = .true.,
+  photon_nmax        = 200,
+}
+
+! ============================================================
+! EM configuration
+!
+! Pump: E2/B3 dominated, forward along +x1.
+! Second pulse is disabled.  With B0 = 0, the seeded axion mode
+! generates perturbative EM fields, which then generate E dot B
+! through the linear pump-perturbation cross terms.
+! ============================================================
+
+zpulse
+{
+  if_launch   = .true.,
+  b_type      = "normal",
+
+  a0          = 0.1,
+  omega0      = 0.25,
+  phase       = 0.0,
+
+  pol_type    = 0,
+  pol         = 0.0,
+
+  propagation = "forward",
+  direction   = 1,
+
+  lon_type    = "gaussian",
+  lon_fwhm    = 500000.0,
+  lon_x0      = 0.0,
+  lon_range   = 1000000.0,
+
+  per_type    = "plane",
+
+  launch_time = 0.0,
+  no_div_corr = .false.,
+}
+
+zpulse
+{
+  if_launch   = .false.,
+  b_type      = "normal",
+
+  a0          = 0.1,
+  omega0      = 0.25,
+  phase       = 0.0,
+
+  pol_type    = 0,
+  pol         = 90.0,
+
+  propagation = "backward",
+  direction   = 1,
+
+  lon_type    = "gaussian",
+  lon_fwhm    = 50000.0,
+  lon_x0      = 0.0,
+  lon_range   = 100000.0,
+
+  per_type    = "plane",
+
+  launch_time = 0.0,
+  no_div_corr = .false.,
+}
+
+! ============================================================
+! Coherent axion-field module
+! ============================================================
+
+axion_field
+{
+  ma          = 2.5e-4,
+  g_agg       = 0.3,
+
+  init_type   = "sin_band",
+  init_ampl   = 1.0e-12,
+  init_kx_min = 1,
+  init_kx_max = 50,
+  init_phase_step = 2.399963229728653,
+  init_band_norm = .false.,
+
+  bc_x_lower  = "periodic",
+  bc_x_upper  = "periodic",
+
+  ndump_fac         = 20,
+  ndump_fac_ave     = 0,
+  ndump_fac_lineout = 0,
+  prec              = 4,
+  n_ave(1:1)        = 1,
+  n_tavg            = -1,
+  reports           = "phi", "phidot", "ae2", "ae3", "ab2", "ab3", "edotb", "emsrcmag"
+}
+
+"""
+}

@@ -1,0 +1,463 @@
+! Pump-calibration variant of test_g=5.3d
+! Purpose:
+!   Measure omega0, k0 and A0 for the Beyer growth-rate overlay.
+!
+! Important calibration choices:
+!   - Static fields are zero.
+!   - g_agg = 0.
+!   - Coherent axion field starts from zero.
+!   - No weak orthogonal seed pulse.
+!   - Use documented standard zpulse syntax: zpulse { ... }, not nl_zpulse { ... }.
+!   - Put zpulse before axion_field, because zpulses are read before the axion-field namelist.
+
+simulation
+{
+  algorithm = 'axion-hybrid',
+  omega_p0 = 4.37e17,
+}
+
+node_conf
+{
+  node_number(1:3) = 1, 1, 1,
+  if_periodic(1:3) = .false., .false., .false.,
+}
+
+grid
+{
+  nx_p(1:3) = 512, 64, 64,
+  coordinates = "cartesian",
+}
+
+time_step
+{
+  dt = 0.95,
+  ndump = 1,
+}
+
+space
+{
+  xmin(1:3) = -512.0, -64.0, -64.0,
+  xmax(1:3) =  512.0,  64.0,  64.0,
+  if_move(1:3) = .false., .false., .false.,
+}
+
+time
+{
+  tmin = 0.0,
+  tmax = 100,
+}
+
+el_mag_fld
+{
+  init_e0(1:3) = 0.0, 0.0, 0.0,
+  init_b0(1:3) = 0.0, 0.0, 0.0,
+}
+
+emf_bound
+{
+  type(1:2,1) = "open","open",
+  type(1:2,2) = "open","open",
+  type(1:2,3) = "open","open",
+}
+
+diag_emf
+{
+  ndump_fac = 2,
+  ndump_fac_ene_int = 0,
+  reports = "e2", "b3"
+}
+
+particles
+{
+  num_species = 1,
+  num_qed = 1,
+  interpolation = "linear",
+}
+
+qed_group
+{
+  if_damp_classical = .false.,
+  if_damp_qed = .false.,
+  if_pairprod = .false.,
+  qed_g_cutoff =  1.e10,
+  p_emit_cutoff = 0.0,
+}
+
+qed_group_diag
+{
+  ndump_fac_rad = 1000000000,
+  ndump_fac_pairs = 1000000000,
+}
+
+! ---------------- electrons ----------------
+species
+{
+  name = "electrons",
+  num_par_x(1:3) = 8, 8, 2,
+  num_par_max = 600000,
+  rqm = -1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- positrons ----------------
+species
+{
+  name = "positrons",
+  num_par_x(1:3) = 1, 1, 1,
+  num_par_max = 1000,
+  rqm = 1.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 0,
+  ndump_fac_ene = 0,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- photons ----------------
+species
+{
+  name = "photons",
+  num_par_x(1:3) = 4, 4, 2,
+  num_par_max = 300000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- axions, QED-created species ----------------
+species
+{
+  name = "photons_axion",
+  num_par_x(1:3) = 1, 1, 1,
+  num_par_max = 5000000,
+  rqm = 0.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+! ---------------- ions, one standard species ----------------
+species
+{
+  name = "ions",
+  num_par_x(1:3) = 2, 2, 2,
+  num_par_max = 80000,
+  rqm = 1836.0,
+  push_type = "standard",
+  add_tag = .true.,
+}
+
+udist
+{
+  uth(1:3) = 0.0, 0.0, 0.0,
+  ufl(1:3) = 0.0, 0.0, 0.0,
+}
+
+profile
+{
+  density = 0.0d0,
+}
+
+spe_bound
+{
+  type(1:2,1) = "reflecting","reflecting",
+  type(1:2,2) = "reflecting","reflecting",
+  type(1:2,3) = "reflecting","reflecting",
+}
+
+diag_species
+{
+  ndump_fac = 1000000000,
+  ndump_fac_ene = 1000000000,
+  ndump_fac_raw = 0,
+  reports = "charge",
+  raw_fraction = 1.0,
+}
+
+qed_bremsstrahlung
+{
+  if_bremsstrahlung = .false.,
+  Z_ion = 13,
+}
+
+! ============================================================
+! AXION MC MODULE SETTINGS, all disabled for this calibration
+! ============================================================
+
+qed_axion_common
+{
+  Te_keV     = 1.3,
+  w_axion    = 1.0e-6,
+  proba_mult = 1.0,
+  lambda_cap = 20.0,
+}
+
+qed_axion_compton
+{
+  if_compton = .false.,
+  if_inverse = .false.,
+  use_bose   = .true.,
+
+  g_ae  = 1.0e-13,
+
+  Te_keV = 1.3,
+  Z_ion  = 1,
+  A_ion  = 1.0,
+  X_H    = 1.0,
+  i_ion(1) = 1,
+
+  assume_neutral = .true.,
+  ne_factor      = 1.0,
+
+  lambda_cap = 20.0,
+  cs_scale   = 1.0,
+
+  proba_mult = 1.0,
+  w_axion    = 1.0e-36,
+
+  apply_feedback   = .false.,
+  fe_electrons     = 1.0,
+  evolve_Te        = .false.,
+  Te_floor_keV     = 0.0,
+  Te_ceil_keV      = 1.0e9,
+  Te_relax         = 1.0,
+  feedback_verbose = .false.,
+}
+
+qed_axion_bremsstrahlung
+{
+  if_bremsstrahlung = .false.,
+  if_inverse        = .false.,
+  use_bose          = .true.,
+
+  g_ae     = 1.0e-13,
+  ax_model = 2,
+  cs_model = -1,
+
+  Te_keV   = 1.3,
+  Z_ion    = 1,
+  A_ion    = 1,
+  X_H      = 1,
+  i_ion(1) = 1,
+
+  assume_neutral = .true.,
+  ne_factor      = 1,
+
+  use_screening  = .true.,
+  lambda_cap     = 20.0,
+  cs_scale       = 1.0,
+  energy_damp    = .false.,
+
+  proba_mult = 1.0,
+  w_axion    = 1.0e-38,
+
+  include_ee = .true.,
+
+  apply_feedback   = .false.,
+  fe_electrons     = 1.0,
+  evolve_Te        = .false.,
+  Te_floor_keV     = 0.0,
+  Te_ceil_keV      = 1.0e9,
+  Te_relax         = 1.0,
+  feedback_verbose = .false.,
+}
+
+qed_axion_primakoff
+{
+  if_primakoff = .false.,
+  if_inverse   = .false.,
+
+  g_agamma = 10.0,
+
+  Te_keV = 1.3,
+
+  include_ee     = .true.,
+  use_screening  = .true.,
+  assume_neutral = .true.,
+  ne_factor      = 1.0,
+
+  w_axion    = 1.0e-6,
+  lambda_cap = 20.0,
+  kappa_keV  = -1.0,
+
+  Z_ion = 1,
+  i_ion(1) = 1,
+
+  debug = .false.,
+
+  photon_init        = 'none',
+  photon_Te_keV      = -1.0,
+  photon_quiet_pairs = .true.,
+  photon_nmax        = 200,
+}
+
+! ============================================================
+! Pump calibration laser
+!
+! Standard documented zpulse syntax.
+! pol = 0 gives dominant E2/B3 for propagation along +x1.
+! The very long Gaussian envelope makes the pump almost plane-wave-like
+! across this 1024-code-unit box while retaining the standard zpulse carrier.
+! ============================================================
+
+zpulse
+{
+  if_launch   = .true.,
+  b_type      = "normal",
+
+  a0          = 10.0,
+  omega0      = 0.25,
+  phase       = 0.0,
+
+  pol_type    = 0,
+  pol         = 0.0,
+
+  propagation = "forward",
+  direction   = 1,
+
+  lon_type    = "gaussian",
+  lon_fwhm    = 16000.0,
+  lon_x0      = 0.0,
+  lon_range   = 16000.0,
+
+  per_type    = "plane",
+
+  launch_time = 0.0,
+  no_div_corr = .false.,
+}
+
+! ============================================================
+! Coherent axion-field module: present but inert for pump calibration
+! ============================================================
+
+axion_field
+{
+  ma          = 1,
+  g_agg       = 0,
+
+  init_type   = "zero",
+  init_ampl   = 0.0,
+  init_kx     = 1,
+  init_ky     = 0,
+  init_kz     = 0,
+
+  bc_x_lower  = "open",
+  bc_x_upper  = "open",
+  bc_y_lower  = "open",
+  bc_y_upper  = "open",
+  bc_z_lower  = "open",
+  bc_z_upper  = "open",
+
+  ndump_fac         = 10,
+  ndump_fac_ave     = 0,
+  ndump_fac_lineout = 0,
+  prec              = 4,
+  n_ave(1:3)        = 1, 1, 1,
+  n_tavg            = -1,
+  reports           = "phi", "ae2", "ae3", "ab2", "ab3", "edotb", "emsrcmag"
+}

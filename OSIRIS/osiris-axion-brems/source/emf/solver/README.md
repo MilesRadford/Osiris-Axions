@@ -1,2 +1,0 @@
-# Electro-Magnetic field solver
-

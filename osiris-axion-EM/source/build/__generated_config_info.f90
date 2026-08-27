@@ -1,0 +1,31 @@
+write(output_unit,'(A)') 'build_info = {'
+write(output_unit,'(A)') '  "version": "6062806-dirty",'
+write(output_unit,'(A)') '  "branch": "main",'
+write(output_unit,'(A)') '  "dimensions": "1",'
+write(output_unit,'(A)') '  "precision": "DOUBLE",'
+write(output_unit,'(A)') '  "build_type": "debug",'
+write(output_unit,'(A)') '  "system": "mybuild",'
+write(output_unit,'(A)') '  "build_tool": "make",'
+write(output_unit,'(A)') '  "build_flags": {'
+write(output_unit,'(A)') '    "FPP"  :"gcc -C -E -x assembler-with-cpp -DHD&
+   &F5",'
+write(output_unit,'(A)') '    "FPPF" :"-DP_X_DIM=1 -DOS_REV=\"6062806-dirty&
+   &\" -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_SSE -DENA&
+   &BLE_RAD -DENABLE_TILES -DENABLE_PGC -DENABLE_QED -DENABLE_SHEAR -DENABL&
+   &E_CYLMODES -DENABLE_QEDCYL -DENABLE_RADCYL -DENABLE_OVERDENSE -DENABLE_&
+   &OVERDENSE_CYL -DENABLE_NEUTRAL_SPIN -DENABLE_XXFEL -DENABLE_GR",'
+write(output_unit,'(A)') '    "F90"  :"mpif90 -ffree-line-length-0 -fno-ran&
+   &ge-check -g -O0 -fbacktrace -fcheck=all",'
+write(output_unit,'(A)') '    "F90F" :" -I/usr/lib/x86_64-linux-gnu/openmpi&
+   &/include -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include -I/usr/lib/x86&
+   &_64-linux-gnu/hdf5/serial",'
+write(output_unit,'(A)') '    "CF"   :"  -DFORTRANSINGLEUNDERSCORE -DPRECIS&
+   &ION_DOUBLE -DSIMD -DSIMD_SSE",'
+write(output_unit,'(A)') '    "cc"   :"mpicc -msse4.1",'
+write(output_unit,'(A)') '    "LDF"  :" -L/usr/lib/x86_64-linux-gnu/hdf5/se&
+   &rial/lib -lm -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -L/usr/li&
+   &b/x86_64-linux-gnu/openmpi/lib -lmpi_usempif08 -lmpi_usempi_ignore_tkr &
+   &-lmpi_mpifh -lmpi ",'
+write(output_unit,'(A)') '   }'
+write(output_unit,'(A)') '}'
+

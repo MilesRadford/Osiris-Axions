@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+    ],
+    "settings": {
+        "files.associations": {
+            "*.f03": "FortranFreeForm",
+            "*.c": "c",
+            "typeinfo": "c"
+        }
+    }
+}
