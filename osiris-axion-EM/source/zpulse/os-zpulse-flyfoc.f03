@@ -2892,7 +2892,10 @@ subroutine launch_wall_3d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, d
   logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed, lbnd_right_of_domain
 
   if( this%use_lab_geometry ) then
-    call this%launch_lab_t0_3d( b, e, g_space, nx_p_min, t_sim, dt, no_co )
+    if( this%if_launch .and. this%if_launch_t0 ) then
+      call this%launch_lab_t0_3d( b, e, g_space, nx_p_min, t_sim, dt, no_co )
+      this%if_launch = .false.
+    endif
     return
   endif
     
