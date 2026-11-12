@@ -165,10 +165,11 @@ subroutine read_input_axion_field_impl( this, input_file )
   real(p_double) :: ma, g_agg, init_ampl, init_lambda, init_phase, init_x0, init_y0, init_z0
   real(p_double) :: init_dir(3), init_w_long, init_w_trans1, init_w_trans2, init_vphase
   real(p_double) :: init_phase_step
+  real(p_double) :: test_src_ampl, test_src_k, test_src_v, test_src_x0, test_src_sigma, test_src_phase
   character(len=32) :: init_type
   character(len=32) :: bc_x_lower, bc_x_upper, bc_y_lower, bc_y_upper, bc_z_lower, bc_z_upper
   integer :: init_kx, init_ky, init_kz, init_kx_min, init_kx_max
-  logical :: init_band_norm
+  logical :: init_band_norm, test_src_on
   integer :: ndump_fac, ndump_fac_ave, ndump_fac_lineout, prec, n_tavg
   integer, dimension(p_x_dim) :: n_ave
   integer, dimension(p_n_report_type) :: ndump_fac_all
@@ -179,6 +180,8 @@ subroutine read_input_axion_field_impl( this, input_file )
                             init_kx_min, init_kx_max, init_phase_step, init_band_norm, &
                             init_lambda, init_phase, init_x0, init_y0, init_z0, init_dir, &
                             init_w_long, init_w_trans1, init_w_trans2, init_vphase, &
+                            test_src_on, test_src_ampl, test_src_k, test_src_v, test_src_x0, &
+                            test_src_sigma, test_src_phase, &
                             bc_x_lower, bc_x_upper, bc_y_lower, bc_y_upper, bc_z_lower, bc_z_upper, &
                             ndump_fac, ndump_fac_ave, ndump_fac_lineout, prec, n_ave, n_tavg, reports
 
@@ -203,6 +206,13 @@ subroutine read_input_axion_field_impl( this, input_file )
   init_w_trans1 = 0.0_p_double
   init_w_trans2 = 0.0_p_double
   init_vphase = 1.0_p_double
+  test_src_on = .false.
+  test_src_ampl = 0.0_p_double
+  test_src_k = 0.0_p_double
+  test_src_v = 1.0_p_double
+  test_src_x0 = 0.0_p_double
+  test_src_sigma = 1.0_p_double
+  test_src_phase = 0.0_p_double
   bc_x_lower = 'periodic'
   bc_x_upper = 'periodic'
   bc_y_lower = 'periodic'
@@ -222,11 +232,11 @@ subroutine read_input_axion_field_impl( this, input_file )
   if ( ierr == 0 ) then
     read( input_file%nml_text, nml = nl_axion_field, iostat = ierr )
     if ( ierr /= 0 ) then
-      write(err_buf__,*) 'Error reading axion_field parameters';call err__("axion_field/os-axion-field-core.f03",101)
+      write(err_buf__,*) 'Error reading axion_field parameters';call err__("axion_field/os-axion-field-core.f03",111)
       call abort_program( p_err_invalid )
     endif
   else if ( ierr < 0 ) then
-    write(err_buf__,*) 'Error processing axion_field parameters';call err__("axion_field/os-axion-field-core.f03",105)
+    write(err_buf__,*) 'Error processing axion_field parameters';call err__("axion_field/os-axion-field-core.f03",115)
     call abort_program( p_err_invalid )
   endif
 
@@ -256,6 +266,26 @@ subroutine read_input_axion_field_impl( this, input_file )
   this%init_w_trans1 = init_w_trans1
   this%init_w_trans2 = init_w_trans2
   this%init_vphase = init_vphase
+
+  this%test_src_on = test_src_on
+  this%test_src_ampl = test_src_ampl
+  this%test_src_k = test_src_k
+  this%test_src_v = test_src_v
+  this%test_src_x0 = test_src_x0
+  this%test_src_sigma = test_src_sigma
+  this%test_src_phase = test_src_phase
+
+  if ( this%test_src_on ) then
+    if ( p_x_dim /= 1 ) then
+      write(err_buf__,*) 'test_src_on currently supports 1D simulations only';call err__("axion_field/os-axion-field-core.f03",156)
+      call abort_program( p_err_invalid )
+    endif
+    if ( this%test_src_sigma <= 0.0_p_double ) then
+      write(err_buf__,*) 'test_src_sigma must be > 0';call err__("axion_field/os-axion-field-core.f03",160)
+      call abort_program( p_err_invalid )
+    endif
+  endif
+
   this%bc_type(p_lower,1) = canonical_axion_bc( bc_x_lower )
   this%bc_type(p_upper,1) = canonical_axion_bc( bc_x_upper )
   this%bc_type(p_lower,2) = canonical_axion_bc( bc_y_lower )
@@ -308,6 +338,14 @@ subroutine init_axion_field_impl( this, g_space, grid, no_co, gc_num_in, dt_init
   this%xmin_loc(1:p_x_dim) = xmin(g_space)
   this%xmax_loc(1:p_x_dim) = xmax(g_space)
 
+  ! Cell-center coordinate for local i1=1, using exactly the same global
+  ! indexing convention as the initialization routines below.
+  this%x1_cell_center0 = xmin(g_space,1) + &
+       ( real(grid%my_nx(p_lower,1),p_double) - 0.5_p_double ) * ldx(1)
+
+  ! The analytic travelling source starts at the deck-specified x0 at t=0.
+  this%test_src_time = 0.0_p_double
+
   call this%a%new( p_x_dim, 1, this%nx(1:p_x_dim), this%gc_num(:,1:p_x_dim), ldx, .true. )
   call this%pi%new( p_x_dim, 1, this%nx(1:p_x_dim), this%gc_num(:,1:p_x_dim), ldx, .true. )
   call this%pert%e%new( p_x_dim, 3, this%nx(1:p_x_dim), this%gc_num(:,1:p_x_dim), ldx, .true. )
@@ -321,6 +359,38 @@ subroutine init_axion_field_impl( this, g_space, grid, no_co, gc_num_in, dt_init
   select case ( trim(this%init_type) )
   case ( 'zero' )
     ! already zeroed
+
+  case ( 'uniform', 'homogeneous' )
+    ! Spatially homogeneous coherent axion field.
+    !
+    ! Initialize both leapfrog time levels to the requested amplitude. The
+    ! standard first-advance correction in os-axion-field-solver.f03 then
+    ! applies the discrete half-step centering using init_kx/init_ky/init_kz.
+    ! For a truly homogeneous mode use init_kx = init_ky = init_kz = 0.
+    select case ( p_x_dim )
+    case (1)
+      do i1 = 1, this%nx(1)
+        this%a%f1(1,i1) = real( amp, p_k_fld )
+        this%pi%f1(1,i1) = real( amp, p_k_fld )
+      enddo
+    case (2)
+      do i2 = 1, this%nx(2)
+        do i1 = 1, this%nx(1)
+          this%a%f2(1,i1,i2) = real( amp, p_k_fld )
+          this%pi%f2(1,i1,i2) = real( amp, p_k_fld )
+        enddo
+      enddo
+    case (3)
+      do i3 = 1, this%nx(3)
+        do i2 = 1, this%nx(2)
+          do i1 = 1, this%nx(1)
+            this%a%f3(1,i1,i2,i3) = real( amp, p_k_fld )
+            this%pi%f3(1,i1,i2,i3) = real( amp, p_k_fld )
+          enddo
+        enddo
+      enddo
+    end select
+
   case ( 'sin_mode', 'sinx' )
     select case ( p_x_dim )
     case (1)
@@ -368,16 +438,16 @@ subroutine init_axion_field_impl( this, g_space, grid, no_co, gc_num_in, dt_init
     ! its own discrete half-step correction so the solver must not later apply
     ! the single-mode first-advance correction to this init_type.
     if ( this%init_kx_min < 1 ) then
-      write(err_buf__,*) 'sin_band requires init_kx_min >= 1';call err__("axion_field/os-axion-field-core.f03",247)
+      write(err_buf__,*) 'sin_band requires init_kx_min >= 1';call err__("axion_field/os-axion-field-core.f03",317)
       call abort_program( p_err_invalid )
     endif
     if ( this%init_kx_max < this%init_kx_min ) then
-      write(err_buf__,*) 'sin_band requires init_kx_max >= init_kx_min';call err__("axion_field/os-axion-field-core.f03",251)
+      write(err_buf__,*) 'sin_band requires init_kx_max >= init_kx_min';call err__("axion_field/os-axion-field-core.f03",321)
       call abort_program( p_err_invalid )
     endif
     lx_band = xmax(g_space,1) - xmin(g_space,1)
     if ( lx_band <= 0.0_p_double ) then
-      write(err_buf__,*) 'sin_band requires positive x1 domain length';call err__("axion_field/os-axion-field-core.f03",256)
+      write(err_buf__,*) 'sin_band requires positive x1 domain length';call err__("axion_field/os-axion-field-core.f03",326)
       call abort_program( p_err_invalid )
     endif
     nmodes = this%init_kx_max - this%init_kx_min + 1
@@ -469,7 +539,7 @@ subroutine init_axion_field_impl( this, g_space, grid, no_co, gc_num_in, dt_init
 
   case ( 'travelling_pulse', 'traveling_pulse', 'gaussian_pulse' )
     if ( this%init_lambda <= 0.0_p_double ) then
-      write(err_buf__,*) 'travelling_pulse requires init_lambda > 0';call err__("axion_field/os-axion-field-core.f03",348)
+      write(err_buf__,*) 'travelling_pulse requires init_lambda > 0';call err__("axion_field/os-axion-field-core.f03",418)
       call abort_program( p_err_invalid )
     endif
     dir = this%init_dir
@@ -612,7 +682,7 @@ subroutine init_axion_field_impl( this, g_space, grid, no_co, gc_num_in, dt_init
       enddo
     end select
   case default
-    write(err_buf__,*) 'Unsupported axion_field init_type = ', trim(this%init_type);call err__("axion_field/os-axion-field-core.f03",491)
+    write(err_buf__,*) 'Unsupported axion_field init_type = ', trim(this%init_type);call err__("axion_field/os-axion-field-core.f03",561)
     call abort_program( p_err_invalid )
   end select
 
@@ -641,6 +711,7 @@ subroutine cleanup_axion_field_impl( this )
   call this%diag%cleanup()
   this%if_initialized = .false.
   this%first_advance = .true.
+  this%test_src_time = 0.0_p_double
 end subroutine cleanup_axion_field_impl
 
 ! Shift the axion-field state when the moving window advances.
@@ -693,6 +764,16 @@ subroutine list_algorithm_axion_field_impl( this )
     print *, '  init_phase = ', this%init_phase
     print *, '  init_phase_step = ', this%init_phase_step
     print *, '  init_band_norm = ', this%init_band_norm
+  endif
+  if ( this%test_src_on ) then
+    print *, '  analytic 1D travelling test source: ON'
+    print *, '    test_src_ampl  = ', this%test_src_ampl
+    print *, '    test_src_k     = ', this%test_src_k
+    print *, '    test_src_v     = ', this%test_src_v
+    print *, '    test_src_x0    = ', this%test_src_x0
+    print *, '    test_src_sigma = ', this%test_src_sigma
+    print *, '    test_src_phase = ', this%test_src_phase
+    print *, '    source is added directly to the KG RHS, independent of g_agg'
   endif
   print *, '  bc x(lower,upper) = ', trim(this%bc_type(p_lower,1)), trim(this%bc_type(p_upper,1))
   if ( p_x_dim >= 2 ) print *, '  bc y(lower,upper) = ', trim(this%bc_type(p_lower,2)), trim(this%bc_type(p_upper,2))

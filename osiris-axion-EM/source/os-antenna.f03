@@ -993,7 +993,7 @@ subroutine antenna_2d_focus(this,efield,dt,t,lower_bound,delta_x)
           a_tx=a_t*dt/delta_x(1)*profile(r(1))*&
                sin(phase+&
                    this%curv_const(1)*coord(1)*coord(1)+ &
-                   local_omega*tan_tilt*(coord(1)+this%rad_x))
+                   local_omega*sin_tilt*(coord(1)+this%rad_x))
           efield%f2(3,array_bound(p_lower,1),ind1)=&
             efield%f2(3,array_bound(p_lower,1),ind1)+a_tx*cos_pol
           efield%f2(2,array_bound(p_lower,1),ind1)=&
@@ -1123,6 +1123,7 @@ subroutine antenna_2d_tilt(this,efield,dt,t,lower_bound,delta_x)
 
   real (p_k_fld),dimension(1)::r,coord
   real (p_k_fld):: local_time,true_time,local_omega
+  real (p_k_fld):: env_time
   integer :: ind_wall, ind1
 
   real (p_k_fld):: cos_tilt,sin_tilt,tan_tilt
@@ -1182,6 +1183,27 @@ subroutine antenna_2d_tilt(this,efield,dt,t,lower_bound,delta_x)
       if (this%ant_type.ne.p_env_alfven) then
         do ind1=array_bound(p_lower,2),array_bound(p_upper,2)
           coord(1)=lower_bound(2)+delta_x(2)*(ind1-array_bound(p_lower,2))-this%x0
+
+          ! Match the pulse-front tilt to the physical carrier tilt.
+          ! For a vacuum plane wave at angle theta to +x1,
+          ! k_perp/omega = sin(theta), so the boundary envelope is
+          ! t + sin(theta)*x_perp.
+          env_time = true_time + sin_tilt*coord(1)
+          select case (this%ant_type)
+          case (p_env_linear)
+            a_t=local_omega*this%a0*envelop_env_linear(this,env_time)
+          case (p_env_gaussian)
+            a_t=local_omega*this%a0*envelop_env_gaussian(this,env_time)
+          case (p_env_supergaussian)
+            a_t=local_omega*this%a0*envelop_env_supergaussian(this,env_time)
+          case (p_env_alfven)
+            if ((env_time-this%delay) > 0.0) then
+              a_t=this%a0*envelop_env_gaussian(this,env_time)
+            else
+              a_t=0.0
+            end if
+          end select
+
           ! coord(2)=lower_bound(3)+delta_x(3)*(ind1-array_bound(LOWER,3))
           ! 1-D definition of the radius
           r(1)=abs(coord(1))/this%rad_x
@@ -1192,7 +1214,7 @@ subroutine antenna_2d_tilt(this,efield,dt,t,lower_bound,delta_x)
           a_tx=a_t*dt/delta_x(1)*profile(r(1))*&
                sin(phase+&
                    this%curv_const(1)*coord(1)*coord(1)+ &
-                   local_omega*tan_tilt*(coord(1)+this%rad_x))
+                   local_omega*sin_tilt*(coord(1)+this%rad_x))
           efield%f2(3,array_bound(p_lower,1),ind1)=&
             efield%f2(3,array_bound(p_lower,1),ind1)+a_tx*cos(this%pol)
           efield%f2(2,array_bound(p_lower,1),ind1)=&

@@ -192,7 +192,7 @@ contains
   ! procedure :: clean_fields => clean_fields_zpulse_mov_wall
   procedure :: lon_center => lon_center_zpulse_mov_wall
 
-  ! procedure :: launch_wall_1d => launch_wall_1d_zpulse_mov_wall
+  procedure :: launch_wall_1d => launch_wall_1d_zpulse_mov_wall
   procedure :: launch_wall_2d => launch_wall_2d_zpulse_mov_wall
   procedure :: launch_wall_3d => launch_wall_3d_zpulse_mov_wall
 
@@ -936,97 +936,150 @@ end function lon_center_zpulse_mov_wall
 !----------------------------------------------------------------------------------------
 
 
-! to do: fix the below code to use the algorithms in the higher
-! dimensional versions
-! !-----------------------------------------------------------------------------------------
-! subroutine launch_wall_1d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, dt, no_co )
+!-----------------------------------------------------------------------------------------
+subroutine launch_wall_1d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim, dt, no_co )
 
-! implicit none
+  implicit none
 
-! integer, parameter :: rank = 1
+  integer, parameter :: rank = 1
 
-! class( t_zpulse_mov_wall ), intent(inout) :: this
-! type( t_vdf ), intent(inout) :: b, e
-! type( t_space ), intent(in) :: g_space
-! integer, dimension(:), intent(in) :: nx_p_min
-! real(p_double), intent(in) :: t, dt
-! class( t_node_conf ), intent(in) :: no_co
+  class( t_zpulse_mov_wall ), intent(inout) :: this
+  type( t_vdf ), intent(inout) :: b, e
+  type( t_space ), intent(in) :: g_space
+  integer, dimension(:), intent(in) :: nx_p_min
+  real(p_double), intent(in) :: t_sim, dt
+  class( t_node_conf ), intent(in) :: no_co
 
+  real(p_double), dimension(2,rank) :: g_x_range
+  real(p_double), dimension(rank) :: ldx
+  real(p_double) :: zmin, zmax, z, z_2
+  real(p_double) :: cos_pol, sin_pol, prop_sign
+  real(p_double) :: amp, lenv, lenv_2, gpos
+  real(p_double) :: phase0_temp, pol_temp
+  integer :: gipos, ipos, i1
+  integer :: lbnd, rbnd, i1start, i1finish
+  logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed, lbnd_right_of_domain
 
-! ! local variables
-! real(p_double), dimension(2,rank) :: g_x_range
-! real(p_double), dimension(2), parameter :: t_range = 0
-! real(p_double), dimension(rank) :: ldx
+  ! launch_zpulse_mov_wall performs the same duration check; keep this
+  ! guard for direct calls and include launch_time consistently.
+  if ( t_sim > this%launch_time + this%t_duration() ) then
+    this%if_launch = .false.
+    return
+  endif
 
-! real(p_double) :: zmin
+  if ( this%propagation == p_forward ) then
+    prop_sign = 1.0_p_double
+  else
+    prop_sign = -1.0_p_double
+  endif
 
-! real(p_double) :: cos_pol, sin_pol
-! real(p_double) :: amp, pha, gpos, old_gpos
+  call get_x_bnd( g_space, g_x_range )
+  ldx(1) = real( b%dx_(1), p_double )
+  zmin = real( g_x_range(p_lower,1), p_double )
+  zmax = real( g_x_range(p_upper,1), p_double )
 
-! integer :: gipos, ipos, i1, di, old_gipos
-! real(p_double) :: t_0, z
+  select case( this%interpolation )
+  case( p_linear, p_cubic )
+    ! Nothing to change here
+  case( p_quadratic, p_quartic )
+    zmin = zmin + ldx(1)*0.5_p_double
+    zmax = zmax + ldx(1)*0.5_p_double
+  end select
 
-! ! Turn off antenna if pulse has ended
-! if ( t > this%t_duration() ) then
-! this%if_launch = .false.
-! return
-! endif
+  cos_pol = cos( this%pol )
+  sin_pol = sin( this%pol )
+  amp = this%omega0 * this%a0
+  if (this%pol_type /= 0) amp = amp / sqrt(2.0_p_double)
 
-! ! Global box sizes
-! call get_x_bnd( g_space, g_x_range )
-! ldx(1) = real( b%dx_(1), p_double )
-! zmin = real( g_x_range(p_lower,1), p_double )
+  if( this%if_launch_from_wall ) then
+    if( this%propagation == p_forward ) then
+      gipos = 1
+    else
+      gipos = floor( ( zmax - zmin ) / ldx(1) ) - 1
+    endif
+  else
+    gpos = this%wall_pos + this%wall_vel*t_sim
+    gipos = int((gpos - zmin)/ldx(1)) + 1
+  endif
 
-! cos_pol = cos( this%pol )
-! sin_pol = sin( this%pol )
-! amp = this%omega0 * this%a0
+  ipos = gipos - nx_p_min(1) + 1
 
-! ! Initial wall position
-! old_gpos = this%wall_pos
-! old_gipos = int((old_gpos - zmin)/ldx(1)) + 1
-! if ( old_gipos < 1 ) old_gipos = 1
+  if( this%propagation == p_forward ) then
+    lbnd = ipos
+    rbnd = ipos + this%ncells
+  else
+    lbnd = ipos - this%ncells
+    rbnd = ipos
+  endif
 
-! ! Current wall position
-! gpos = this%wall_pos + this%wall_vel*t
-! gipos = int((gpos - zmin)/ldx(1)) + 1
-! if ( gipos < 1 ) gipos = 1
+  lbnd_right_of_domain = ( lbnd >= e%nx_(1) )
+  lbnd_in_domain = (lbnd >= 1) .and. (lbnd <= e%nx_(1))
+  rbnd_in_domain = (rbnd >= 1) .and. (rbnd <= e%nx_(1))
+  domain_enclosed = (lbnd < 1) .and. (rbnd > e%nx_(1))
 
-! ! Number of cells moved
-! di = old_gipos - gipos
+  lbnd = max( lbnd, 1 )
+  rbnd = min( rbnd, e%nx_(1) )
 
-! if ( gipos >= nx_p_min( 1 ) .and. gipos < nx_p_min( 1 ) + b%nx_(1) - 1 ) then
+  if( lbnd_in_domain .or. rbnd_in_domain .or. domain_enclosed ) then
+    i1start = lbnd
+    i1finish = rbnd
 
-! ipos = gipos - nx_p_min(1) + 1
+    if( .not. this%if_add_fields ) then
+      e%f1(:,i1start:i1finish) = 0
+      b%f1(:,i1start:i1finish) = 0
+    endif
 
-! do i1 = ipos, ipos+2
-! ! t_0 = t + (di - (i1-ipos))*ldx(1)
-! z = gipos + ldx(1) * ( i1 - ipos )
+    do i1 = i1start, i1finish
+      z = zmin + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+      z_2 = z + 0.5_p_double * ldx(1)
+      lenv = amp * this%t_envelope( t_sim, z )
+      lenv_2 = amp * this%t_envelope( t_sim, z_2 )
 
-! pha = amp * this % t_envelope( t, z ) * cos( this%omega0*(z-t) + this%phase0 )
+      e%f1(2,i1) = e%f1(2,i1) + real( this%boost_per_fac * lenv * cos_pol, p_k_fld )
+      e%f1(3,i1) = e%f1(3,i1) + real( this%boost_per_fac * lenv * sin_pol, p_k_fld )
+      b%f1(2,i1) = b%f1(2,i1) - real( this%boost_per_fac * lenv_2 * sin_pol * prop_sign, p_k_fld )
+      b%f1(3,i1) = b%f1(3,i1) + real( this%boost_per_fac * lenv_2 * cos_pol * prop_sign, p_k_fld )
+    enddo
 
-! e%f1(1, i1) = 0
-! e%f1(2, i1) = real( pha * cos_pol, p_k_fld )
-! e%f1(3, i1) = real( pha * sin_pol, p_k_fld )
+    if (this%pol_type /= 0) then
+      phase0_temp = this%phase0
+      pol_temp = this%pol
+      this%phase0 = this%phase0 + real( sign( pi_2, real( this%pol_type, p_double )), p_double )
+      this%pol = this%pol + real( pi_2, p_double )
+      cos_pol = cos( this%pol )
+      sin_pol = sin( this%pol )
 
-! enddo
+      do i1 = i1start, i1finish
+        z = zmin + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+        z_2 = z + 0.5_p_double * ldx(1)
+        lenv = amp * this%t_envelope( t_sim, z )
+        lenv_2 = amp * this%t_envelope( t_sim, z_2 )
 
-! do i1 = ipos, ipos+1
-! b%f1(1,i1) = 0
-! b%f1(2,i1) = - 0.5_p_k_fld * (e%f1(3,i1) + e%f1(3,i1+1))
-! b%f1(3,i1) = + 0.5_p_k_fld * (e%f1(2,i1) + e%f1(2,i1+1))
-! enddo
+        e%f1(2,i1) = e%f1(2,i1) + real( this%boost_per_fac * lenv * cos_pol, p_k_fld )
+        e%f1(3,i1) = e%f1(3,i1) + real( this%boost_per_fac * lenv * sin_pol, p_k_fld )
+        b%f1(2,i1) = b%f1(2,i1) - real( this%boost_per_fac * lenv_2 * sin_pol * prop_sign, p_k_fld )
+        b%f1(3,i1) = b%f1(3,i1) + real( this%boost_per_fac * lenv_2 * cos_pol * prop_sign, p_k_fld )
+      enddo
 
+      this%phase0 = phase0_temp
+      this%pol = pol_temp
+    endif
+  endif
 
-! do i1 = 0, ipos-1
-! b%f1(:,i1) = 0
-! e%f1(:,i1) = 0
-! enddo
+  ! No divergence-integration correction is needed in 1D: the launcher
+  ! leaves E1=B1=0 and there are no transverse derivatives in div(E/B).
+  if( this%if_clean_fields ) then
+    if( lbnd_right_of_domain ) then
+      e%f1(:,:) = 0
+      b%f1(:,:) = 0
+    else if( lbnd_in_domain ) then
+      e%f1(:,:i1start-1) = 0
+      b%f1(:,:i1start-1) = 0
+    endif
+  endif
 
-! endif
-
-! end subroutine launch_wall_1d_zpulse_mov_wall
-! !-----------------------------------------------------------------------------------------
-
+end subroutine launch_wall_1d_zpulse_mov_wall
+!-----------------------------------------------------------------------------------------
 
 
 !-----------------------------------------------------------------------------------------
@@ -1065,13 +1118,9 @@ subroutine launch_wall_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
   real(p_double) :: phase0_temp, pol_temp
 
   ! Turn off antenna if pulse has ended
-  if ( t_sim > this % t_duration() ) then
-    if (mpi_node()==0) print *,"duration exceeded. "
-    if (mpi_node()==0) print *,"this%t_duration(): ", this%t_duration()
+  if ( t_sim > this%launch_time + this%t_duration() ) then
     this%if_launch = .false.
     return
-  ! else
-    ! print *, "launching mov wall"
   endif
 
   if ( this%propagation == p_forward ) then
@@ -1201,6 +1250,7 @@ subroutine launch_wall_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
         do i1 = i1start, i1finish
 
           z = zmin + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+          z_2 = z + 0.5_p_double * ldx(1)
           lenv = amp * this % t_envelope( t_sim, z )
           lenv_2 = amp * this % t_envelope( t_sim, z_2 )
 
@@ -1262,7 +1312,7 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
 
   ! dummy variables
 
-  integer, parameter :: rank = 2
+  integer, parameter :: rank = 3
 
   class( t_zpulse_mov_wall ), intent(inout) :: this
   type( t_vdf ), intent(inout) :: b, e
@@ -1291,13 +1341,9 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
   real(p_double) :: phase0_temp, pol_temp
 
   ! Turn off antenna if pulse has ended
-  if ( t_sim > this % t_duration() ) then
-    if (mpi_node()==0) print *,"duration exceeded. "
-    if (mpi_node()==0) print *,"this%t_duration(): ", this%t_duration()
+  if ( t_sim > this%launch_time + this%t_duration() ) then
     this%if_launch = .false.
     return
-  ! else
-    ! print *, "launching mov wall"
   endif
 
   if ( this%propagation == p_forward ) then
@@ -1359,6 +1405,7 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
     rbnd = ipos
   endif
 
+  lbnd_right_of_domain = ( lbnd >= e%nx_(1) )
   lbnd_in_domain = (lbnd >= 1) .and. (lbnd <= e%nx_(1))
   rbnd_in_domain = (rbnd >= 1) .and. (rbnd <= e%nx_(1))
   domain_enclosed = (lbnd < 1) .and. (rbnd > e%nx_(1))
@@ -1373,8 +1420,8 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
     i1finish = rbnd
 
     if( .not. this%if_add_fields ) then
-      e%f2(:,i1start:i1finish,:) = 0
-      b%f2(:,i1start:i1finish,:) = 0
+      e%f3(:,i1start:i1finish,:,:) = 0
+      b%f3(:,i1start:i1finish,:,:) = 0
     endif
 
     do i2 = lbound(e%f3, 3), ubound(e%f3, 3)
@@ -1384,7 +1431,7 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
 
       do i3 = lbound(e%f3, 4), ubound(e%f3, 4)
 
-        r2 = r2min + (i2 - 1 + nx_p_min(3)) * ldx(3)
+        r2 = r2min + (i3 - 1 + nx_p_min(3)) * ldx(3)
         r2_2 = r2 + 0.5_p_double * ldx(3)
 
         do i1 = i1start, i1finish
@@ -1431,14 +1478,15 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
         r1 = r1min + (i2 - 1 + nx_p_min(2)) * ldx(2)
         r1_2 = r1 + 0.5_p_double * ldx(2)
 
-        do i3 = lbound(e%f3, 3), ubound(e%f3, 3)
+        do i3 = lbound(e%f3, 4), ubound(e%f3, 4)
 
-          r2 = r2min + (i2 - 1 + nx_p_min(3)) * ldx(3)
+          r2 = r2min + (i3 - 1 + nx_p_min(3)) * ldx(3)
           r2_2 = r2 + 0.5_p_double * ldx(3)
 
           do i1 = i1start, i1finish
 
             z = zmin + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+            z_2 = z + 0.5_p_double * ldx(1)
             lenv = amp * this % t_envelope( t_sim, z )
             lenv_2 = amp * this % t_envelope( t_sim, z_2 )
 
@@ -1467,6 +1515,17 @@ subroutine launch_wall_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t_sim,
 
   endif
 
+  if( this%if_clean_fields ) then
+    if( lbnd_right_of_domain ) then
+      e%f3(:,:,:,:) = 0
+      b%f3(:,:,:,:) = 0
+    else if( lbnd_in_domain ) then
+      e%f3(:,:i1start-1,:,:) = 0
+      b%f3(:,:i1start-1,:,:) = 0
+    endif
+  endif
+
+
 end subroutine launch_wall_3d_zpulse_mov_wall
 !-----------------------------------------------------------------------------------------
 
@@ -1485,7 +1544,7 @@ subroutine apply_divcorr_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
   class( t_node_conf ), intent(in) :: no_co
 
   real(p_double) :: e2p, e2m, e1, b2p, b2m, b1
-  integer :: i1, i2
+  integer :: i1, i2, i1e, i1b
 
   integer :: lbnd, rbnd
   logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed
@@ -1548,7 +1607,7 @@ subroutine apply_divcorr_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
     ! Current wall position
     gpos = this%wall_pos + this%wall_vel*t
     gipos = int((gpos - zmin)/ldx(1)) + 1
-    ipos = gipos - + 1
+    ipos = gipos - nx_p_min(1) + 1
 
     if( (gpos - ldx(1) < zmin) .or. (gpos + (this%ncells + 1) * ldx(1) > zmax ) ) then
       if (mpi_node()==0) print *,"WARNING: zpulse_mov_wall hit the boundary before pulse injection was complete. Stopping injection."
@@ -1602,13 +1661,18 @@ subroutine apply_divcorr_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
   ! from nearest neighbor
   if( .not. start_in_domain ) then
     ! print *, "calling recv."
-    call mpi_recv( divcorr_buf, 2 * size, MPI_DOUBLE, &
-                   no_co%neighbor( recv_neighbor, 1 ) - 1, &
-                   0, no_co%comm, status, ierr )
-
-    print *, "recv"
-
-    call check_error(ierr,"zpulse wall: recv fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1487)
+    if ( no_co%comm /= MPI_COMM_NULL .and. &
+         no_co%neighbor( recv_neighbor, 1 ) > 0 ) then
+      call mpi_recv( divcorr_buf, 2 * size, MPI_DOUBLE, &
+                     no_co%neighbor( recv_neighbor, 1 ) - 1, &
+                     0, no_co%comm, status, ierr )
+      call check_error(ierr,"zpulse wall: recv fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1545)
+    else
+      ! Reaching this branch without a real neighbour means the divergence
+      ! integral was asked to start outside the local/global physical domain.
+      ! Avoid using an uninitialised receive buffer.
+      divcorr_buf = 0.0_p_double
+    endif
 
   endif
 
@@ -1626,19 +1690,25 @@ subroutine apply_divcorr_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
 
     do i1 = i1start, i1finish, direction
 
-      ! old method:
-      ! e2p = e%f2(2,i1+1,i2)
-      ! e2m = e%f2(2,i1+1,i2-1)
+      ! Match OSIRIS div_vdf exactly. E uses offset=0 while the
+      ! magnetic-divergence diagnostic uses offset=1. Consequently the
+      ! transverse slice needed by the recurrence depends on integration
+      ! direction and differs for E and B.
+      if( direction == -1 ) then
+        i1e = i1 + 1
+        i1b = i1
+      else
+        i1e = i1
+        i1b = i1 - 1
+      endif
 
-      e2p = e%f2(2,i1,i2)
-      e2m = e%f2(2,i1,i2-1)
-
+      e2p = e%f2(2,i1e,i2)
+      e2m = e%f2(2,i1e,i2-1)
       e1 = e1 - direction * ldx(1)*(e2p - e2m)/ldx(2)
       e%f2(1, i1, i2) = real( e1, p_k_fld )
 
-      b2p = b%f2(2,i1,i2+1)
-      b2m = b%f2(2,i1,i2)
-
+      b2p = b%f2(2,i1b,i2+1)
+      b2m = b%f2(2,i1b,i2)
       b1 = b1 - direction * ldx(1) * (b2p - b2m) / ldx(2)
       b%f2(1, i1, i2) = real(b1, p_k_fld )
 
@@ -1655,11 +1725,13 @@ subroutine apply_divcorr_2d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
     divcorr_buf(1,1:size) = e%f2(1, i1finish, 1:size)
     divcorr_buf(2,1:size) = b%f2(1, i1finish, 1:size)
 
-    call mpi_send( divcorr_buf, 2 * size, MPI_DOUBLE, &
-                   no_co%neighbor( send_neighbor, 1 ) - 1, &
-                   0, no_co%comm, ierr )
-
-    call check_error(ierr,"zpulse wall: send fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1538)
+    if ( no_co%comm /= MPI_COMM_NULL .and. &
+         no_co%neighbor( send_neighbor, 1 ) > 0 ) then
+      call mpi_send( divcorr_buf, 2 * size, MPI_DOUBLE, &
+                     no_co%neighbor( send_neighbor, 1 ) - 1, &
+                     0, no_co%comm, ierr )
+      call check_error(ierr,"zpulse wall: send fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1609)
+    endif
 
   endif
 
@@ -1674,7 +1746,7 @@ end subroutine apply_divcorr_2d_zpulse_mov_wall
 subroutine apply_divcorr_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, dt, no_co )
 
   implicit none
-  integer, parameter :: rank = 2
+  integer, parameter :: rank = 3
 
   class( t_zpulse_mov_wall ), intent(inout) :: this
   type( t_vdf ), intent(inout) :: b, e
@@ -1683,180 +1755,164 @@ subroutine apply_divcorr_3d_zpulse_mov_wall( this, b, e, g_space, nx_p_min, t, d
   real(p_double), intent(in) :: t, dt
   class( t_node_conf ), intent(in) :: no_co
 
- ! real(p_double) :: e2p, e2m, e1, b2p, b2m, b1
- ! integer :: i1, i2
+  real(p_double) :: e2p, e2m, e3p, e3m, e1
+  real(p_double) :: b2p, b2m, b3p, b3m, b1
+  integer :: i1, i2, i3, i1e, i1b
 
- ! integer :: lbnd, rbnd
- ! logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed
+  integer :: lbnd, rbnd
+  logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed
+  integer :: i1start, i1finish, direction, i1_initial_data
+  integer :: recv_neighbor, send_neighbor
+  logical :: start_in_domain, finish_in_domain
 
- ! integer :: i1start, i1finish, direction, i1_initial_data
- ! integer :: recv_neighbor, send_neighbor
- ! logical :: start_in_domain, finish_in_domain
+  real(p_double), dimension(2,rank) :: g_x_range
+  real(p_double), dimension(rank) :: ldx
+  real(p_double) :: zmin, zmax
+  real(p_double) :: gpos
+  integer :: gipos, ipos
 
- ! real(p_double), dimension(2,rank) :: g_x_range
- ! real(p_double), dimension(rank) :: ldx
- ! real(p_double) :: zmin, zmax, rmin
- ! real(p_double) :: gpos, gipos, ipos
+  integer :: size2, size3, nbuf
+  integer :: ierr
+  integer, dimension( MPI_STATUS_SIZE ) :: status
+  real(p_double), dimension(:,:,:), allocatable :: divcorr_buf
 
- ! integer :: size
- ! integer :: ierr
- ! integer, dimension( MPI_STATUS_SIZE ) :: status
- ! real(p_double), dimension(:,:), allocatable :: divcorr_buf
+  call get_x_bnd( g_space, g_x_range )
 
- ! ! start and finish are the start and finish values of the calculation
- ! ! for forward pulse, start at the end of the wall in the forward direction
- ! ! and finish at the start of the pulse
- ! ! the field outside the fields we just set (up to ipos + ncells ) is assumed to be correct
+  ldx(1:3) = real( b%dx_(1:3), p_double )
+  zmin = real( g_x_range(p_lower,1), p_double )
+  zmax = real( g_x_range(p_upper,1), p_double )
 
- ! ! Global box sizes
- ! call get_x_bnd( g_space, g_x_range )
+  select case( this%interpolation )
+  case( p_linear, p_cubic )
+    ! Nothing to change here
+  case( p_quadratic, p_quartic )
+    zmin = zmin + ldx(1)*0.5_p_double
+  end select
 
- ! ldx(1:2) = real( b%dx_(1:2), p_double )
- ! zmin = real( g_x_range(p_lower,1), p_double )
- ! zmax = real( g_x_range(p_upper,1), p_double )
- ! rmin = real( g_x_range(p_lower,2), p_double )
+  if( this%if_launch_t0 ) then
+    lbnd = 1 - nx_p_min(1)
+    rbnd = int( (zmax - zmin)/ldx(1) ) - nx_p_min(1)
+  else
+    gpos = this%wall_pos + this%wall_vel*t
+    gipos = int((gpos - zmin)/ldx(1)) + 1
+    ipos = gipos - nx_p_min(1) + 1
 
- ! select case( this%interpolation )
- ! case( p_linear, p_cubic )
- ! ! Nothing to change here
- ! case( p_quadratic, p_quartic )
- ! zmin = zmin + ldx(1)*0.5_p_double
- ! rmin = rmin + ldx(2)*0.5_p_double
- ! end select
+    if( (gpos - ldx(1) < zmin) .or. &
+        (gpos + (this%ncells + 1) * ldx(1) > zmax ) ) then
+      if (mpi_node()==0) print *,"WARNING: zpulse_mov_wall hit the boundary before pulse injection was complete. Stopping injection."
+      this%if_launch = .false.
+      return
+    endif
 
- ! ! start near domain boundary
- ! if( this%if_launch_from_wall ) then
+    if( this%propagation == p_forward ) then
+      lbnd = ipos
+      rbnd = ipos + this%ncells + 1
+    else
+      lbnd = ipos - this%ncells - 1
+      rbnd = ipos
+    endif
+  endif
 
- ! if( this%propagation == p_forward ) then
- ! gipos = 1
- ! else
- ! gipos = floor( ( zmax - zmin ) / ldx(1) ) - 1
- ! endif
+  lbnd_in_domain = (lbnd >= 1) .and. (lbnd <= e%nx_(1))
+  rbnd_in_domain = (rbnd >= 1) .and. (rbnd <= e%nx_(1))
+  domain_enclosed = (lbnd < 1) .and. (rbnd > e%nx_(1))
 
- ! ! else compute the wall position in global coordinates, stored as gpos
- ! else
- ! gpos = this%wall_pos + this%wall_vel*t
- ! gipos = int((gpos - zmin)/ldx(1)) + 1
+  if( .not. this%if_launch_t0 .and. &
+      .not.(lbnd_in_domain .or. rbnd_in_domain .or. domain_enclosed) ) return
 
- ! if( (gpos - ldx(1) < zmin) .or. (gpos + (this%ncells + 1) * ldx(1) > zmax ) ) then
- ! if (mpi_node()==0) print *,"WARNING: zpulse_mov_wall hit the boundary before pulse injection was complete. Stopping injection."
- ! this%if_launch = .false.
- ! return
- ! endif
+  if( this%propagation == p_forward ) then
+    direction = -1
+    recv_neighbor = p_upper
+    send_neighbor = p_lower
+    i1start = min( rbnd - 1, e%nx_(1) )
+    i1finish = max( lbnd, 1 )
+    i1_initial_data = rbnd
+    start_in_domain = rbnd_in_domain
+    finish_in_domain = lbnd_in_domain
+  else
+    direction = 1
+    recv_neighbor = p_lower
+    send_neighbor = p_upper
+    i1start = max( 1, lbnd + 1 )
+    i1finish = min( rbnd, e%nx_(1) )
+    i1_initial_data = lbnd
+    start_in_domain = lbnd_in_domain
+    finish_in_domain = rbnd_in_domain
+  endif
 
- ! endif
+  size2 = e%nx_(2)
+  size3 = e%nx_(3)
+  nbuf = 2 * size2 * size3
+  allocate( divcorr_buf(2,size2,size3) )
 
- ! ipos = gipos - nx_p_min(1) + 1
+  if( .not. start_in_domain ) then
+    if ( no_co%comm /= MPI_COMM_NULL .and. &
+         no_co%neighbor( recv_neighbor, 1 ) > 0 ) then
+      call mpi_recv( divcorr_buf, nbuf, MPI_DOUBLE, &
+                     no_co%neighbor( recv_neighbor, 1 ) - 1, &
+                     0, no_co%comm, status, ierr )
+      call check_error(ierr,"zpulse wall 3D: recv fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1730)
+    else
+      divcorr_buf = 0.0_p_double
+    endif
+  endif
 
- ! ! left and right bounds of the calculation
- ! if( this%propagation == p_forward ) then
- ! lbnd = ipos
- ! rbnd = ipos + this%ncells + 1
- ! else
- ! lbnd = ipos - this%ncells - 1
- ! rbnd = ipos
- ! endif
+  do i3 = 1, e%nx_(3)
+    do i2 = 1, e%nx_(2)
 
- ! lbnd_in_domain = ( lbnd >= 1) .and. (lbnd <= e%nx_(1))
- ! rbnd_in_domain = (rbnd >= 1) .and. (rbnd <= e%nx_(1))
- ! domain_enclosed = (lbnd < 1) .and. (rbnd > e%nx_(1))
+      if( start_in_domain ) then
+        e1 = e%f3(1, i1_initial_data, i2, i3)
+        b1 = b%f3(1, i1_initial_data, i2, i3)
+      else
+        e1 = divcorr_buf(1,i2,i3)
+        b1 = divcorr_buf(2,i2,i3)
+      endif
 
+      do i1 = i1start, i1finish, direction
+        ! Match OSIRIS div_vdf exactly: div(E) is evaluated with offset=0,
+        ! whereas div(B) is evaluated with offset=1.
+        if( direction == -1 ) then
+          i1e = i1 + 1
+          i1b = i1
+        else
+          i1e = i1
+          i1b = i1 - 1
+        endif
 
- ! ! wall outside is completely outside this domain: do nothing
- ! if( .not.( lbnd_in_domain .or. rbnd_in_domain .or. domain_enclosed ) ) return
+        e2p = e%f3(2,i1e,i2, i3)
+        e2m = e%f3(2,i1e,i2-1,i3)
+        e3p = e%f3(3,i1e,i2,i3 )
+        e3m = e%f3(3,i1e,i2,i3-1)
+        e1 = e1 - direction * ldx(1) * ( &
+             (e2p - e2m)/ldx(2) + (e3p - e3m)/ldx(3) )
+        e%f3(1,i1,i2,i3) = real( e1, p_k_fld )
 
- ! if( this%propagation == p_forward ) then
- ! direction = -1
- ! recv_neighbor = p_upper
- ! send_neighbor = p_lower
- ! i1start = min( rbnd - 1, e%nx_(1) )
- ! i1finish = max( lbnd, 1 )
- ! i1_initial_data = rbnd
- ! start_in_domain = rbnd_in_domain
- ! finish_in_domain = lbnd_in_domain
- ! else
- ! direction = 1
- ! recv_neighbor = p_lower
- ! send_neighbor = p_upper
- ! i1start = max( 1, lbnd + 1 )
- ! i1finish = min( rbnd, e%nx_(1) )
- ! i1_initial_data = lbnd
- ! start_in_domain = lbnd_in_domain
- ! finish_in_domain = rbnd_in_domain
- ! endif
+        b2p = b%f3(2,i1b,i2+1,i3)
+        b2m = b%f3(2,i1b,i2, i3)
+        b3p = b%f3(3,i1b,i2,i3+1)
+        b3m = b%f3(3,i1b,i2,i3 )
+        b1 = b1 - direction * ldx(1) * ( &
+             (b2p - b2m)/ldx(2) + (b3p - b3m)/ldx(3) )
+        b%f3(1,i1,i2,i3) = real( b1, p_k_fld )
+      enddo
 
-  ! print *, i1start, i1finish, e%nx_(1), lbnd_in_domain, rbnd_in_domain, domain_enclosed
+    enddo
+  enddo
 
-  ! size = e%nx_(2)
-  ! allocate( divcorr_buf( 2, size ) )
+  if( .not. finish_in_domain ) then
+    divcorr_buf(1,1:size2,1:size3) = e%f3(1,i1finish,1:size2,1:size3)
+    divcorr_buf(2,1:size2,1:size3) = b%f3(1,i1finish,1:size2,1:size3)
 
-  ! ! check if integral start is in domain; else we need calculated values
-  ! ! from nearest neighbor
-  ! if( .not. start_in_domain ) then
-  ! ! print *, "calling recv."
-  ! call mpi_recv( divcorr_buf, 2 * size, MPI_DOUBLE, &
-  ! no_co%neighbor( recv_neighbor, 1 ) - 1, &
-  ! 0, no_co%comm, status, ierr )
+    if ( no_co%comm /= MPI_COMM_NULL .and. &
+         no_co%neighbor( send_neighbor, 1 ) > 0 ) then
+      call mpi_send( divcorr_buf, nbuf, MPI_DOUBLE, &
+                     no_co%neighbor( send_neighbor, 1 ) - 1, &
+                     0, no_co%comm, ierr )
+      call check_error(ierr,"zpulse wall 3D: send fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1787)
+    endif
+  endif
 
-  ! call check_error(ierr,"zpulse wall: recv fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1677)
-
-  ! endif
-
-  ! do i3 = 1, e%nx_(3)
-
-  ! do i2 = 1, e%nx_(2)
-
-  ! ! starting value: either use value from previous node if the
-  ! ! divergence integral is not starting locally
-  ! if( start_in_domain ) then
-  ! e1 = e%f3( 1, i1_initial_data, i2 )
-  ! b1 = b%f3( 1, i1_initial_data, i2 )
-  ! else
-  ! e1 = divcorr_buf(1,i2,i3)
-  ! b1 = divcorr_buf(2,i2,i3)
-  ! endif
-
-  ! do i1 = i1start, i1finish, direction
-
-  ! ! old method:
-  ! ! e2p = e%f2(2,i1+1,i2)
-  ! ! e2m = e%f2(2,i1+1,i2-1)
-
-  ! e2p = e%f2(2,i1,i2)
-  ! e2m = e%f2(2,i1,i2-1)
-
-  ! e1 = e1 - direction * ldx(1)*(e2p - e2m)/ldx(2)
-  ! e%f2(1, i1, i2) = real( e1, p_k_fld )
-
-  ! b2p = b%f2(2,i1,i2+1)
-  ! b2m = b%f2(2,i1,i2)
-
-  ! b1 = b1 - direction * ldx(1) * (b2p - b2m) / ldx(2)
-  ! b%f2(1, i1, i2) = real(b1, p_k_fld )
-
-  ! enddo ! i1
-
-  ! enddo ! i2
-  ! enddo ! i3
-
-  ! ! stop
-
-  ! ! if integral finish is not in domain, we need to send the results of the integral
-  ! ! to be finished in the next domain
-  ! if( .not. finish_in_domain ) then
-
-  ! divcorr_buf(1,:) = e%f2(1, i1finish, 1:size)
-  ! divcorr_buf(2,:) = b%f2(1, i1finish, 1:size)
-
-  ! call mpi_send( divcorr_buf, 2 * size, MPI_DOUBLE, &
-  ! no_co%neighbor( send_neighbor, 1 ) - 1, &
-  ! 0, no_co%comm, ierr )
-
-  ! call check_error(ierr,"zpulse wall: send fail",p_err_mpi,"zpulse/os-zpulse-mov-wall.f03",1731)
-
-  ! endif
-
- ! deallocate( divcorr_buf )
+  deallocate( divcorr_buf )
 
 end subroutine apply_divcorr_3d_zpulse_mov_wall
 !-----------------------------------------------------------------------------------------
@@ -1974,8 +2030,8 @@ subroutine launch_zpulse_mov_wall( this, emf, g_space, &
   if ( this%if_launch .and. ( t >= this%launch_time ) ) then
 
     select case (emf%b%x_dim_)
-    ! case(1)
-    ! call this % launch_wall_1d( emf%b, emf%e, g_space, nx_p_min, t, dt, no_co )
+    case(1)
+      call this % launch_wall_1d( emf%b, emf%e, g_space, nx_p_min, t, dt, no_co )
 
     case(2)
       call this % launch_wall_2d( emf%b, emf%e, g_space, nx_p_min, t, dt, no_co )
@@ -1992,7 +2048,7 @@ subroutine launch_zpulse_mov_wall( this, emf, g_space, &
       endif
 
     case default
-      write(err_buf__,*) 'Not implemented yet';call err__("zpulse/os-zpulse-mov-wall.f03",1871)
+      write(err_buf__,*) 'Not implemented yet';call err__("zpulse/os-zpulse-mov-wall.f03",1927)
       call abort_program( p_err_notimplemented )
 
     end select

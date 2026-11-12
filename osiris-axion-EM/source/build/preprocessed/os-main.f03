@@ -232,8 +232,8 @@ subroutine set_diag_sim_info( opts, sim )
 
   ! The preprocessor gets confused if you try to concatenate these macros
   ! so define proper Fortran parameters
-  character(len=*), parameter :: date = "Jun  1 2026"
-  character(len=*), parameter :: time = "10:15:07"
+  character(len=*), parameter :: date = "Oct  8 2026"
+  character(len=*), parameter :: time = "13:52:30"
 
 
 

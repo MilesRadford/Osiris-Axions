@@ -44,6 +44,18 @@ type, extends( t_zpulse_mov_wall ) :: t_zpulse_flyfoc
     real(p_double) :: interp_dx2, interp_dt 
     real(p_double) :: vff     
 
+    ! Optional laboratory geometry.  This decouples the carrier
+    ! propagation direction from the flying-focus trajectory.
+    ! The current input interface retains carrier_angle for the validated
+    ! 2D geometry, while all stored geometry is represented by 3-vectors
+    ! so the same state can be used by the forthcoming 3D implementation.
+    logical :: use_lab_geometry
+    real(p_double) :: carrier_angle
+    real(p_double), dimension(3) :: carrier_dir
+    real(p_double), dimension(3) :: lab_basis_p, lab_basis_s
+    real(p_double), dimension(3) :: focus_start, focus_end, focus_dir
+    real(p_double) :: focus_length, focus_t_start
+
     ! astrl params
     real(p_double) :: z1, z2, z_lead, zr, initial_delay, final_delay, vg
     integer :: integral_size
@@ -93,6 +105,10 @@ contains
 
   procedure :: get_env_gaussian_2d => get_env_gaussian_2d_zpulse_flyfoc 
   procedure :: get_env_astrl_2d => get_env_astrl_2d_zpulse_flyfoc 
+  procedure :: get_env_lab_2d => get_env_lab_2d_zpulse_flyfoc
+  procedure :: get_field_lab_2d => get_field_lab_2d_zpulse_flyfoc
+  procedure :: get_env_lab_3d => get_env_lab_3d_zpulse_flyfoc
+  procedure :: get_field_lab_3d => get_field_lab_3d_zpulse_flyfoc
   procedure :: get_env_astrl_discrete_2d => get_env_astrl_discrete_2d_zpulse_flyfoc 
 
   procedure :: get_env_gaussian_3d => get_env_gaussian_3d_zpulse_flyfoc 
@@ -108,6 +124,8 @@ contains
   procedure :: launch_wall_3d => launch_wall_3d_zpulse_flyfoc 
 
   procedure :: launch_wall_t0_2d => launch_wall_t0_2d_zpulse_flyfoc 
+  procedure :: launch_lab_t0_2d => launch_lab_t0_2d_zpulse_flyfoc
+  procedure :: launch_lab_t0_3d => launch_lab_t0_3d_zpulse_flyfoc
 
 
 end type t_zpulse_flyfoc
@@ -118,6 +136,50 @@ end type t_zpulse_flyfoc
 public :: t_zpulse_flyfoc
 
 contains
+
+!-----------------------------------------------------------------------------------------
+! Integrate uniformly sampled focal-plane contributions over [z1,z2].
+! The original implementation treated integral_size as both the number of
+! samples and the number of sub-intervals, so z2 was never sampled.  It also
+! applied Simpson 1/3 to an even number of points.  Here integral_size is the
+! number of sample points, including both endpoints.  Odd point counts use
+! Simpson 1/3 throughout; even point counts use Simpson 1/3 followed by a
+! Simpson 3/8 panel for the final three intervals.
+complex(p_double) function integrate_astrl_samples( buf, n, h ) result(val)
+
+  complex(p_double), dimension(:), intent(in) :: buf
+  integer, intent(in) :: n
+  real(p_double), intent(in) :: h
+  integer :: m
+
+  val = cmplx( 0.0_p_double, 0.0_p_double, kind=p_double )
+
+  if ( n <= 1 ) then
+    return
+  else if ( n == 2 ) then
+    val = 0.5_p_double * h * ( buf(1) + buf(2) )
+  else if ( mod(n,2) == 1 ) then
+    val = h / 3.0_p_double * ( buf(1) + buf(n) + &
+          4.0_p_double * sum(buf(2:n-1:2)) + &
+          2.0_p_double * sum(buf(3:n-2:2)) )
+  else if ( n == 4 ) then
+    val = 3.0_p_double * h / 8.0_p_double * &
+          ( buf(1) + 3.0_p_double*buf(2) + 3.0_p_double*buf(3) + buf(4) )
+  else
+    ! n is even.  Use Simpson 1/3 through point n-3 (an even number
+    ! of sub-intervals), then Simpson 3/8 on points n-3:n.
+    m = n - 3
+    val = h / 3.0_p_double * ( buf(1) + buf(m) + &
+          4.0_p_double * sum(buf(2:m-1:2)) + &
+          2.0_p_double * sum(buf(3:m-2:2)) )
+    val = val + 3.0_p_double * h / 8.0_p_double * &
+          ( buf(n-3) + 3.0_p_double*buf(n-2) + &
+            3.0_p_double*buf(n-1) + buf(n) )
+  endif
+
+end function integrate_astrl_samples
+!-----------------------------------------------------------------------------------------
+
 
 !-----------------------------------------------------------------------------------------
 subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodic, grid, sim_options )
@@ -157,6 +219,9 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
   logical :: if_launch_t0
   real(p_double) :: interp_dx2, interp_dt 
   real(p_double) :: vff 
+  logical :: use_lab_geometry
+  real(p_double) :: carrier_angle, focus_t_start
+  real(p_double), dimension(3) :: carrier_dir, focus_start, focus_end
 
   ! astrl params
   real(p_double) :: z1, z2, initial_delay, final_delay, vg
@@ -200,6 +265,9 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
   ! tmp variables
   integer :: N, i 
   real(p_k_fparse), dimension(1) :: fparser_arr 
+  real(p_double) :: carrier_nmag, basis_pmag
+  real(p_double), dimension(3) :: basis_ref
+  logical :: carrier_dir_any_set, carrier_dir_all_set
 
   namelist /nl_zpulse_flyfoc/ &
         a0, omega0, phase, pol_type, pol, propagation, direction, &
@@ -209,6 +277,7 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
         per_center, per_w0, &
         env_type, &
         if_interp_env, if_launch_t0, interp_dx2, interp_dt, & 
+        use_lab_geometry, carrier_angle, carrier_dir, focus_start, focus_end, focus_t_start, &
         vff, vg, z1, z2, initial_delay, final_delay, integral_size, &
         focal_weight_type, focal_weight_math_func, &
         focal_delay_type,  focal_delay_math_func, &
@@ -261,6 +330,14 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
   if_launch_t0          = .false.
   interp_dx2             = -1.0_p_double
   interp_dt              = -1.0_p_double 
+
+  ! Laboratory-geometry defaults: disabled, so legacy decks are unchanged.
+  use_lab_geometry = .false.
+  carrier_angle = 0.0_p_double
+  carrier_dir(:) = huge(1.0_p_double)
+  focus_start(:) = 0.0_p_double
+  focus_end(:) = 0.0_p_double
+  focus_t_start = 0.0_p_double
 
   ! continuous astrl
   z1 = 0.0_p_double
@@ -508,7 +585,32 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
   this%if_launch_t0     = if_launch_t0
   this%interp_dx2    = interp_dx2 
   this%interp_dt     = interp_dt 
-  
+
+  ! laboratory flying-focus geometry
+  this%use_lab_geometry = use_lab_geometry
+  this%carrier_angle = real( carrier_angle * pi_180, p_double )
+  ! carrier_dir is the preferred general 3D input.  If omitted, retain the
+  ! historical carrier_angle convention in the x1-x2 plane.  A partially
+  ! specified vector is rejected rather than silently mixing interfaces.
+  carrier_dir_any_set = any( abs(carrier_dir) < 0.5_p_double*huge(1.0_p_double) )
+  carrier_dir_all_set = all( abs(carrier_dir) < 0.5_p_double*huge(1.0_p_double) )
+  if( carrier_dir_any_set .and. .not. carrier_dir_all_set ) then
+    SCR_ROOT( 'ERROR in zpulse_flyfoc: carrier_dir requires all three components')
+    stop
+  endif
+  if( carrier_dir_all_set ) then
+    this%carrier_dir = carrier_dir
+  else
+    this%carrier_dir = (/ cos(this%carrier_angle), sin(this%carrier_angle), 0.0_p_double /)
+  endif
+  this%lab_basis_p = 0.0_p_double
+  this%lab_basis_s = 0.0_p_double
+  this%focus_start = focus_start
+  this%focus_end = focus_end
+  this%focus_t_start = focus_t_start
+  this%focus_dir = 0.0_p_double
+  this%focus_length = 0.0_p_double
+
   ! shared ff params
   this%z1 = z1
   this%z2 = z2 
@@ -516,6 +618,86 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
   this%final_delay = final_delay
   this%vff = vff 
   this%vg = vg 
+
+  if( this%use_lab_geometry ) then
+    if( p_x_dim .lt. 2 .or. p_x_dim .gt. 3 ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: use_lab_geometry requires 2D or 3D')
+      stop
+    endif
+    if( .not. this%if_launch_t0 ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: use_lab_geometry currently requires if_launch_t0 = .true.')
+      stop
+    endif
+    if( this%if_interp_env ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: use_lab_geometry currently requires if_interp_env = .false.')
+      stop
+    endif
+    if( this%propagation .ne. p_forward ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: laboratory geometry specifies carrier propagation explicitly; set propagation = "forward"')
+      stop
+    endif
+    if( this%pol_type .ne. 0 ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: use_lab_geometry currently supports linear polarization only (pol_type = 0)')
+      stop
+    endif
+    if( abs(this%vff) .le. tiny(1.0_p_double) ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: vff must be non-zero in laboratory geometry')
+      stop
+    endif
+    if( this%vg .le. 0.0_p_double ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: vg must be > 0 in laboratory geometry')
+      stop
+    endif
+
+    ! Normalize the carrier vector and build a deterministic orthonormal
+    ! transverse basis.  For carriers in the x1-x2 plane this reduces to
+    ! p=(-n2,n1,0), s=(0,0,1), exactly matching the validated 2D code.
+    carrier_nmag = sqrt( sum( this%carrier_dir**2 ) )
+    if( carrier_nmag .le. tiny(1.0_p_double) ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: carrier_dir must be non-zero in laboratory geometry')
+      stop
+    endif
+    this%carrier_dir = this%carrier_dir / carrier_nmag
+
+    if( p_x_dim .eq. 2 ) then
+      if( abs(this%carrier_dir(3)) > 100.0_p_double*epsilon(1.0_p_double) ) then
+        SCR_ROOT( 'ERROR in zpulse_flyfoc: 2D laboratory geometry requires carrier_dir(3)=0')
+        stop
+      endif
+      if( abs(this%focus_start(3)) > 100.0_p_double*epsilon(1.0_p_double) .or. &
+          abs(this%focus_end(3)) > 100.0_p_double*epsilon(1.0_p_double) ) then
+        SCR_ROOT( 'ERROR in zpulse_flyfoc: 2D laboratory geometry requires focus_start(3)=focus_end(3)=0')
+        stop
+      endif
+    endif
+
+    basis_ref = (/ 0.0_p_double, 0.0_p_double, 1.0_p_double /)
+    if( abs(dot_product(basis_ref,this%carrier_dir)) > 0.95_p_double ) then
+      basis_ref = (/ 0.0_p_double, 1.0_p_double, 0.0_p_double /)
+    endif
+
+    this%lab_basis_p(1) = basis_ref(2)*this%carrier_dir(3) - basis_ref(3)*this%carrier_dir(2)
+    this%lab_basis_p(2) = basis_ref(3)*this%carrier_dir(1) - basis_ref(1)*this%carrier_dir(3)
+    this%lab_basis_p(3) = basis_ref(1)*this%carrier_dir(2) - basis_ref(2)*this%carrier_dir(1)
+    basis_pmag = sqrt( sum(this%lab_basis_p**2) )
+    if( basis_pmag .le. tiny(1.0_p_double) ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: failed to construct laboratory polarization basis')
+      stop
+    endif
+    this%lab_basis_p = this%lab_basis_p / basis_pmag
+
+    this%lab_basis_s(1) = this%carrier_dir(2)*this%lab_basis_p(3) - this%carrier_dir(3)*this%lab_basis_p(2)
+    this%lab_basis_s(2) = this%carrier_dir(3)*this%lab_basis_p(1) - this%carrier_dir(1)*this%lab_basis_p(3)
+    this%lab_basis_s(3) = this%carrier_dir(1)*this%lab_basis_p(2) - this%carrier_dir(2)*this%lab_basis_p(1)
+
+    this%focus_dir = this%focus_end - this%focus_start
+    this%focus_length = sqrt( sum( this%focus_dir**2 ) )
+    if( this%focus_length .le. tiny(1.0_p_double) ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: focus_start and focus_end must define a non-zero path')
+      stop
+    endif
+    this%focus_dir = this%focus_dir / this%focus_length
+  endif
 
   this%zr = 0.5_p_double * omega0 * this%per_w0(1)**2 
 
@@ -558,18 +740,28 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
 
     this%integral_size = integral_size
 
-    if( z2 <= z1 ) then
-      SCR_ROOT( "ERROR in os-zpulse-flyfoc: z2 > z1 is required when using tunable_env_gaussian")
+    if( .not. this%use_lab_geometry ) then
+      if( z2 <= z1 ) then
+        SCR_ROOT( "ERROR in os-zpulse-flyfoc: z2 > z1 is required when using tunable_env_gaussian")
+        stop
+      endif
+    endif
+
+    if( integral_size .lt. 2 ) then 
+      SCR_ROOT( "ERROR in os-zpulse-flyfoc: integral_size >= 2 is required")
       stop
     endif
 
-    if( integral_size .le. 0 ) then 
-      SCR_ROOT( "ERROR in os-zpulse-flyfoc: integral size > 0 is required")
-      stop
+    if( this%use_lab_geometry ) then
+      this%tenv_launch_duration = abs( this%focus_length / this%vff ) + this%tenv_range &
+        + this%initial_delay + this%final_delay
+    else if( this%propagation .eq. p_forward ) then
+      this%tenv_launch_duration = abs( ( this%vg/this%vff - 1.0_p_double ) * (z2 - z1) ) &
+        + this%initial_delay + this%final_delay
+    else
+      this%tenv_launch_duration = abs( ( this%vg/this%vff + 1.0_p_double ) * (z2 - z1) ) &
+        + this%initial_delay + this%final_delay
     endif
-
-    this%tenv_launch_duration = abs( ( this%vg/this%vff - 1 ) * (z2 - z1) ) &
-      + this%initial_delay + this%final_delay 
 
     select case( focal_weight_type ) 
 
@@ -843,6 +1035,21 @@ subroutine read_input_zpulse_flyfoc( this, input_file, g_space, bnd_con, periodi
     this % boost_per_fac = 1.0_p_double
   endif
 
+  if( this%use_lab_geometry ) then
+    if( this%env_type .ne. p_astrl ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: laboratory geometry currently supports env_type = "astrl" only')
+      stop
+    endif
+    if( this%focal_delay_type .ne. p_const ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: laboratory geometry derives focal delay from focus path and vff; use focal_delay_type = "const"')
+      stop
+    endif
+    if( this%focal_xperp_type .ne. p_const ) then
+      SCR_ROOT( 'ERROR in zpulse_flyfoc: laboratory geometry currently requires focal_xperp_type = "const"')
+      stop
+    endif
+  endif
+
   call this%init_extra_vars() 
 
   call this%init_env_norm( grid, g_space ) 
@@ -857,13 +1064,24 @@ subroutine init_extra_vars_zpulse_flyfoc( this )
 
   class( t_zpulse_flyfoc ), intent(inout) :: this
 
-  if( this%focal_delay_type .eq. p_const ) then 
-    if( this%vff > 0 .and. this%vff < this%vg ) then 
-      this%z_lead = this%z1
+  if( this%focal_delay_type .eq. p_const .and. .not. this%use_lab_geometry ) then
+    ! Choose the reference focal plane so that the programmed delay is
+    ! non-negative across [z1,z2].  For a carrier propagating with sign s,
+    ! the moving-focus delay slope is vg/vff - s.
+    if( this%propagation .eq. p_forward ) then
+      if( (this%vg/this%vff - 1.0_p_double) >= 0.0_p_double ) then
+        this%z_lead = this%z1
+      else
+        this%z_lead = this%z2
+      endif
     else
-      this%z_lead = this%z2 
-    endif       
-  endif 
+      if( (this%vg/this%vff + 1.0_p_double) >= 0.0_p_double ) then
+        this%z_lead = this%z1
+      else
+        this%z_lead = this%z2
+      endif
+    endif
+  endif
 
   select case( this%env_type )
 
@@ -872,7 +1090,11 @@ subroutine init_extra_vars_zpulse_flyfoc( this )
     call alloc( this%buf_1d, (/ this%integral_size /) )
     this%buf_1d(:) = 0
 
-    this%dz0 = ( this%z2 - this%z1 ) / this%integral_size
+    if( this%use_lab_geometry ) then
+      this%dz0 = this%focus_length / real( this%integral_size - 1, p_double )
+    else
+      this%dz0 = ( this%z2 - this%z1 ) / real( this%integral_size - 1, p_double )
+    endif
 
   end select 
 
@@ -890,7 +1112,8 @@ subroutine init_env_norm_zpulse_flyfoc( this, grid, g_space )
 
   real(p_double) :: default_env_norm 
   complex(p_double) :: tmp_env_norm 
-  real(p_double) :: t, z0, x2, x3, delay
+  real(p_double) :: t, z0, x2, x3, delay, prop_sign, s0
+  real(p_double), dimension(3) :: r0
   real(p_k_fparse), dimension(1) :: fparser_arr 
   real(p_double) :: gxmin2, gxmax2, dx2
   integer :: nx2 
@@ -914,15 +1137,40 @@ subroutine init_env_norm_zpulse_flyfoc( this, grid, g_space )
     ! get the central value 
     this%env_norm = 1.0_p_double
 
+    if( this%use_lab_geometry ) then
+      ! Normalize at the midpoint of the programmed laboratory focus path,
+      ! at the instant when the moving focus reaches that point.
+      s0 = 0.5_p_double * this%focus_length
+      r0 = this%focus_start + s0 * this%focus_dir
+      t = this%focus_t_start + s0 / this%vff
+      select case( p_x_dim )
+      case(2)
+        call this%get_env_lab_2d( t, r0(1), r0(2), tmp_env_norm )
+      case(3)
+        call this%get_env_lab_3d( t, r0(1), r0(2), r0(3), tmp_env_norm )
+      end select
+      if( abs(tmp_env_norm) .le. tiny(1.0_p_double) ) then
+        SCR_ROOT( 'ERROR in zpulse_flyfoc: zero envelope encountered while normalizing laboratory geometry')
+        stop
+      endif
+      this%env_norm = default_env_norm / abs( tmp_env_norm )
+
+    else
+
     ! normalize envelope to the central value of z 
     z0 = ( this%z1 + this%z2 ) / 2 
 
     ! compute the time at which we will hit this value of z 
     select case( this%focal_delay_type )
 
-    case( p_const ) 
+    case( p_const )
 
-      delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - 1 ) 
+      if( this%propagation .eq. p_forward ) then
+        prop_sign = 1.0_p_double
+      else
+        prop_sign = -1.0_p_double
+      endif
+      delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - prop_sign )
 
     case( p_func )
 
@@ -931,9 +1179,15 @@ subroutine init_env_norm_zpulse_flyfoc( this, grid, g_space )
 
     end select
 
-    ! normalize to the a0 that would be attained IN VACUUM 
-    ! must add lon_center so that the z0-focused pulse component is peaked at (z0,t(z0)) 
-    t = z0 + delay + this%lon_center() 
+    ! Normalize at the time when the z0-focused constituent is at the
+    ! centre of its temporal envelope.  t_envelope uses t-z+xi0 for a
+    ! forward wave and t+z-xi0 for a backward wave.
+    if( this%propagation .eq. p_forward ) then
+      prop_sign = 1.0_p_double
+    else
+      prop_sign = -1.0_p_double
+    endif
+    t = prop_sign*z0 + delay - prop_sign*this%xi0 + this%lon_center()
 
     select case( p_x_dim )
 
@@ -947,6 +1201,8 @@ subroutine init_env_norm_zpulse_flyfoc( this, grid, g_space )
 
     this%env_norm = default_env_norm / abs( tmp_env_norm )
 
+    endif
+
 
   case( p_astrl_discrete )
 
@@ -955,7 +1211,12 @@ subroutine init_env_norm_zpulse_flyfoc( this, grid, g_space )
     z0 = this%astrl_discrete_focal_points( this%astrl_discrete_norm_idx )
     delay = this%astrl_discrete_focal_delays( this%astrl_discrete_norm_idx )
     
-    t = z0 + delay + this%lon_center() 
+    if( this%propagation .eq. p_forward ) then
+      prop_sign = 1.0_p_double
+    else
+      prop_sign = -1.0_p_double
+    endif
+    t = prop_sign*z0 + delay - prop_sign*this%xi0 + this%lon_center()
 
     select case( p_x_dim ) 
 
@@ -1320,41 +1581,43 @@ subroutine precompute_envelope_2d_zpulse_flyfoc( this, e, g_space, nx_p_min, dt 
 
   delta_t = this%interp_dt
 
-  ! dimensions of the spatial parts of the buffer 
-  nt = ceiling( (tmax - tmin )/ this%interp_dt )
-  nz = ceiling( (zmax - zmin) / interp_dx1 )
-  nx2 = ceiling( (x2max - x2min) / this%interp_dx2 )
+  ! Number of interpolation intervals in each direction.  Multilinear
+  ! interpolation needs both endpoints of every interval, so the buffer
+  ! contains ninterval+1 grid points in each direction.
+  nt = max( 1, ceiling( (tmax - tmin )/ this%interp_dt ) )
+  nz = max( 1, ceiling( (zmax - zmin) / interp_dx1 ) )
+  nx2 = max( 1, ceiling( (x2max - x2min) / this%interp_dx2 ) )
 
-  this%e_env_grid_shape(1:3) = (/ nt, nz, nx2 /)
+  this%e_env_grid_shape(1:3) = (/ nt + 1, nz + 1, nx2 + 1 /)
 
   this%e_env_grid_bounds(1,1:2) = (/ tmin, tmax /)
   this%e_env_grid_bounds(2,1:2) = (/ zmin, zmax /)
   this%e_env_grid_bounds(3,1:2) = (/ x2min, x2max /)
 
-  this%e_env_grid_dx(1) = ( tmax - tmin ) / nt 
-  this%e_env_grid_dx(2) = ( zmax - zmin ) / nz 
-  this%e_env_grid_dx(3) = ( x2max - x2min ) / nx2
+  this%e_env_grid_dx(1) = ( tmax - tmin ) / real(nt, p_double)
+  this%e_env_grid_dx(2) = ( zmax - zmin ) / real(nz, p_double)
+  this%e_env_grid_dx(3) = ( x2max - x2min ) / real(nx2, p_double)
 
-  call alloc( this%e_env_buffer_2d, (/ nt, nz, nx2 /) )
+  call alloc( this%e_env_buffer_2d, (/ nt + 1, nz + 1, nx2 + 1 /) )
   this%e_env_buffer_2d(:,:,:) = 0 
 
   progress_counter = 0
   num_progress_intervals = 10
 
-  do i0 = 1, nt 
+  do i0 = 1, nt + 1
 
-    if( i0 * 1.0_p_double / nt >= ( progress_counter * 1.0_p_double / num_progress_intervals ) ) then 
-      SCR_ROOT( i0, " / ", nt, "..." )
+    if( i0 * 1.0_p_double / (nt + 1) >= ( progress_counter * 1.0_p_double / num_progress_intervals ) ) then
+      SCR_ROOT( i0, " / ", nt + 1, "..." )
       progress_counter = progress_counter + 1
     endif
 
     t = tmin + ( i0 - 1 ) * this%e_env_grid_dx(1) 
 
-    do i1 = 1, nz
+    do i1 = 1, nz + 1
  
       z = zmin + ( i1 - 1 ) * this%e_env_grid_dx(2) 
 
-      do i2 = 1, nx2  
+      do i2 = 1, nx2 + 1
         x2 = x2min + (i2 - 1 ) * this%e_env_grid_dx(3)
 
         call this%get_env_2d( t, z, x2, env )
@@ -1381,9 +1644,9 @@ end subroutine precompute_envelope_2d_zpulse_flyfoc
 
 
 !-----------------------------------------------------------------------------------------
-subroutine precompute_envelope_3d_zpulse_flyfoc( this, e, g_space, nx_p_min, dt ) 
+subroutine precompute_envelope_3d_zpulse_flyfoc( this, e, g_space, nx_p_min, dt )
 
-  integer, parameter :: rank = 2
+  integer, parameter :: rank = 3
 
   class( t_zpulse_flyfoc ), intent(inout) :: this
   type( t_vdf ), intent(in) :: e
@@ -1394,147 +1657,118 @@ subroutine precompute_envelope_3d_zpulse_flyfoc( this, e, g_space, nx_p_min, dt 
   real(p_double), dimension(2,rank) :: g_x_range
   real(p_double), dimension(rank) :: ldx
 
-  integer :: nt, nz, nx2
-  integer :: i0, i1, i2
+  integer :: nt, nz, nx2, nx3
+  integer :: i0, i1, i2, i3
 
-  ! bounds of the z region that must be computed 
-  real(p_double) :: tmin, tmax, zmin, zmax, x2min, x2max, delta_t, zwall  
-  real(p_double) :: x2, z, t
+  real(p_double) :: tmin, tmax, zmin, zmax, x2min, x2max, x3min, x3max, zwall
+  real(p_double) :: x2, x3, z, t
   real(p_double) :: interp_dx1
 
   complex(p_double) :: env
 
-  ! progress messages
   integer :: progress_counter, num_progress_intervals
 
-  ! type(t_fft_manager) :: fft_manager 
+  SCR_ROOT( "Computing 3D pulse envelope..." )
 
-  SCR_ROOT( "Computing pulse envelope..." )
-
-  ! calculate spatial data 
   call get_x_bnd( g_space, g_x_range )
+  ldx(1:3) = real( e%dx_(1:3), p_double )
 
-  ldx(1:2) = real( e%dx_(1:2), p_double )
-
-  if( .not. this%if_launch_from_wall ) then 
-
-    zmin = this%wall_pos - 2 * ldx(1) 
+  if( .not. this%if_launch_from_wall ) then
+    zmin = this%wall_pos - 2 * ldx(1)
     zmax = this%wall_pos + (this%ncells + 2) * ldx(1)
-
   else
-
-    if( this%propagation .eq. p_forward ) then 
-
+    if( this%propagation .eq. p_forward ) then
       zwall = real( g_x_range(p_lower,1) )
       zmin = zwall - 2 * ldx(1)
-      zmax = zwall + ( this%ncells + 2 ) * ldx(1) 
-
+      zmax = zwall + ( this%ncells + 2 ) * ldx(1)
     else
-
       zwall = real( g_x_range(p_upper,1) )
       zmin = zwall - ( this%ncells + 2 ) * ldx(1)
-      zmax = zwall + 2 * ldx(1) 
-
+      zmax = zwall + 2 * ldx(1)
     endif
-
   endif
 
-  x2min = real( g_x_range(p_lower,2) ) + ( lbound( e%f2, 3 ) + nx_p_min(2) - 3 ) * ldx(2) 
-  x2max = real( g_x_range(p_lower,2) ) + ( ubound( e%f2, 3 ) + nx_p_min(2) + 3 ) * ldx(2) 
+  x2min = real( g_x_range(p_lower,2) ) + ( lbound( e%f3, 3 ) + nx_p_min(2) - 3 ) * ldx(2)
+  x2max = real( g_x_range(p_lower,2) ) + ( ubound( e%f3, 3 ) + nx_p_min(2) + 3 ) * ldx(2)
+  x3min = real( g_x_range(p_lower,3) ) + ( lbound( e%f3, 4 ) + nx_p_min(3) - 3 ) * ldx(3)
+  x3max = real( g_x_range(p_lower,3) ) + ( ubound( e%f3, 4 ) + nx_p_min(3) + 3 ) * ldx(3)
 
   select case( this%interpolation )
   case( p_linear, p_cubic )
-    ! Nothing to change here
+    ! no coordinate correction
   case( p_quadratic, p_quartic )
     zmin = zmin + ldx(1)*0.5_p_double
     zmax = zmax + ldx(1)*0.5_p_double
     x2min = x2min + ldx(2)*0.5_p_double
     x2max = x2max + ldx(2)*0.5_p_double
+    x3min = x3min + ldx(3)*0.5_p_double
+    x3max = x3max + ldx(3)*0.5_p_double
   end select
 
-  if( .not. this%if_boost ) then 
-    tmin = 0 - this%interp_dt  
-    tmax = this%tenv_launch_duration + this%interp_dt 
-    interp_dx1 = ldx(1) 
-  else 
-    ! tmin = this%gamma_times_beta * this%wall_pos
-    ! tmin = 0 - 2 * dt / this%boost_per_fac
+  if( .not. this%if_boost ) then
+    tmin = 0.0_p_double - this%interp_dt
+    tmax = this%tenv_launch_duration + this%interp_dt
+    interp_dx1 = ldx(1)
+  else
     tmin = this%gamma_times_beta * this%wall_pos
     tmax = this%tenv_launch_duration + ldx(1) * this%gamma_times_beta
     zmin = this%gamma * zmin
-    zmax = this%gamma * zmax 
+    zmax = this%gamma * zmax
     interp_dx1 = this%interp_dt
   endif
 
-  ! temporarily disable envelope field interpolation so that we can get 
-  ! the exact field values within this function call -- unset at end of this routine
+  ! Evaluate exact envelopes while constructing the interpolation table.
   this%if_interp_env = .false.
 
-  ! some envelopes must be handled differently for the precomputation
+  nt  = max( 1, ceiling( (tmax - tmin ) / this%interp_dt ) )
+  nz  = max( 1, ceiling( (zmax - zmin ) / interp_dx1 ) )
+  nx2 = max( 1, ceiling( (x2max - x2min) / this%interp_dx2 ) )
+  nx3 = max( 1, ceiling( (x3max - x3min) / this%interp_dx2 ) )
 
-  select case( this%env_type )
+  this%e_env_grid_shape(1:4) = (/ nt + 1, nz + 1, nx2 + 1, nx3 + 1 /)
 
-  ! these envelopes are all handled the same way: we can compute the envelope
-  ! exactly at any given point without having to compute a bunch of values at once
-  ! (e.g. in the chromatic ff).
-  case default 
+  this%e_env_grid_bounds(1,1:2) = (/ tmin, tmax /)
+  this%e_env_grid_bounds(2,1:2) = (/ zmin, zmax /)
+  this%e_env_grid_bounds(3,1:2) = (/ x2min, x2max /)
+  this%e_env_grid_bounds(4,1:2) = (/ x3min, x3max /)
 
-    delta_t = this%interp_dt
+  this%e_env_grid_dx(1) = ( tmax - tmin ) / real(nt, p_double)
+  this%e_env_grid_dx(2) = ( zmax - zmin ) / real(nz, p_double)
+  this%e_env_grid_dx(3) = ( x2max - x2min ) / real(nx2, p_double)
+  this%e_env_grid_dx(4) = ( x3max - x3min ) / real(nx3, p_double)
 
-    ! dimensions of the spatial parts of the buffer 
-    nt = ceiling( (tmax - tmin )/ this%interp_dt )
-    nz = ceiling( (zmax - zmin) / interp_dx1 )
-    nx2 = ceiling( (x2max - x2min) / this%interp_dx2 )
+  call alloc( this%e_env_buffer_3d, (/ nt + 1, nz + 1, nx2 + 1, nx3 + 1 /) )
+  this%e_env_buffer_3d(:,:,:,:) = 0
 
-    this%e_env_grid_shape(1:3) = (/ nt, nz, nx2 /)
+  progress_counter = 0
+  num_progress_intervals = 10
 
-    this%e_env_grid_bounds(1,1:2) = (/ tmin, tmax /)
-    this%e_env_grid_bounds(2,1:2) = (/ zmin, zmax /)
-    this%e_env_grid_bounds(3,1:2) = (/ x2min, x2max /)
+  do i0 = 1, nt + 1
+    if( i0 * 1.0_p_double / (nt + 1) >= &
+        ( progress_counter * 1.0_p_double / num_progress_intervals ) ) then
+      SCR_ROOT( i0, " / ", nt + 1, "..." )
+      progress_counter = progress_counter + 1
+    endif
 
-    this%e_env_grid_dx(1) = ( tmax - tmin ) / nt 
-    this%e_env_grid_dx(2) = ( zmax - zmin ) / nz 
-    this%e_env_grid_dx(3) = ( x2max - x2min ) / nx2
+    t = tmin + ( i0 - 1 ) * this%e_env_grid_dx(1)
 
-    call alloc( this%e_env_buffer_2d, (/ nt, nz, nx2 /) )
-    this%e_env_buffer_2d(:,:,:) = 0 
+    do i1 = 1, nz + 1
+      z = zmin + ( i1 - 1 ) * this%e_env_grid_dx(2)
 
-    progress_counter = 0
-    num_progress_intervals = 10
+      do i2 = 1, nx2 + 1
+        x2 = x2min + ( i2 - 1 ) * this%e_env_grid_dx(3)
 
-    do i0 = 1, nt 
+        do i3 = 1, nx3 + 1
+          x3 = x3min + ( i3 - 1 ) * this%e_env_grid_dx(4)
 
-      if( i0 * 1.0_p_double / nt >= ( progress_counter * 1.0_p_double / num_progress_intervals ) ) then 
-        SCR_ROOT( i0, " / ", nt, "..." )
-        progress_counter = progress_counter + 1
-      endif
-
-      t = tmin + ( i0 - 1 ) * this%e_env_grid_dx(1) 
-
-      do i1 = 1, nz
-   
-        z = zmin + ( i1 - 1 ) * this%e_env_grid_dx(2) 
-
-        do i2 = 1, nx2  
-          x2 = x2min + (i2 - 1 ) * this%e_env_grid_dx(3)
-
-          call this%get_env_2d( t, z, x2, env )
-
-          this%e_env_buffer_2d(i0, i1, i2 ) =  env 
-
-        enddo 
-
+          call this%get_env_3d( t, z, x2, x3, env )
+          this%e_env_buffer_3d(i0, i1, i2, i3) = env
+        enddo
       enddo
-
     enddo
+  enddo
 
-    ! print *, mpi_node(), 'max env: ' , maxval(abs(this%e_env_buffer_2d)) 
-
-  end select 
-
-  SCR_ROOT( "Successfully computed envelope." )
-
-  ! revert if_interp_env -- now, the fields can be interpolated. 
+  SCR_ROOT( "Successfully computed 3D envelope." )
   this%if_interp_env = .true.
 
 end subroutine precompute_envelope_3d_zpulse_flyfoc
@@ -1552,19 +1786,27 @@ subroutine get_env_2d_zpulse_flyfoc( this, t, z, x2, env )
   real(p_double), dimension(3) :: x, x1, dx
   integer, dimension(3) :: ix1
 
+  if( this%use_lab_geometry ) then
+    call this%get_env_lab_2d( t, z, x2, env )
+    return
+  endif
+
   if( this%if_interp_env ) then
 
     dx(1:3) = this%e_env_grid_dx(1:3)
-    
-    ix1(1) = floor( (t - this%e_env_grid_bounds(1,1)) / this%e_env_grid_dx(1) )
+
+    ix1(1) = floor( (t - this%e_env_grid_bounds(1,1)) / dx(1) )
+    ix1(1) = max( 0, min( ix1(1), this%e_env_grid_shape(1) - 2 ) )
     x1(1) = dx(1) * ix1(1) + this%e_env_grid_bounds(1,1)
     x(1) = t
-    
-    ix1(2) = floor( (z - this%e_env_grid_bounds(2,1)) / this%e_env_grid_dx(2) )
+
+    ix1(2) = floor( (z - this%e_env_grid_bounds(2,1)) / dx(2) )
+    ix1(2) = max( 0, min( ix1(2), this%e_env_grid_shape(2) - 2 ) )
     x1(2) = dx(2) * ix1(2) + this%e_env_grid_bounds(2,1)
     x(2) = z
 
-    ix1(3) = floor( (x2 - this%e_env_grid_bounds(3,1)) / this%e_env_grid_dx(3) )
+    ix1(3) = floor( (x2 - this%e_env_grid_bounds(3,1)) / dx(3) )
+    ix1(3) = max( 0, min( ix1(3), this%e_env_grid_shape(3) - 2 ) )
     x1(3) = dx(3) * ix1(3) + this%e_env_grid_bounds(3,1)
     x(3) = x2
 
@@ -1602,25 +1844,34 @@ subroutine get_env_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
   real(p_double), dimension(4) :: x, x1, dx
   integer, dimension(4) :: ix1
 
+  if( this%use_lab_geometry ) then
+    call this%get_env_lab_3d( t, z, x2, x3, env )
+    return
+  endif
+
   if( this%if_interp_env ) then
 
-    dx(1:3) = this%e_env_grid_dx(1:3)
-    
-    ix1(1) = floor( (t - this%e_env_grid_bounds(1,1)) / this%e_env_grid_dx(1) )
+    dx(1:4) = this%e_env_grid_dx(1:4)
+
+    ix1(1) = floor( (t - this%e_env_grid_bounds(1,1)) / dx(1) )
+    ix1(1) = max( 0, min( ix1(1), this%e_env_grid_shape(1) - 2 ) )
     x1(1) = dx(1) * ix1(1) + this%e_env_grid_bounds(1,1)
     x(1) = t
-    
-    ix1(2) = floor( (z - this%e_env_grid_bounds(2,1)) / this%e_env_grid_dx(2) )
+
+    ix1(2) = floor( (z - this%e_env_grid_bounds(2,1)) / dx(2) )
+    ix1(2) = max( 0, min( ix1(2), this%e_env_grid_shape(2) - 2 ) )
     x1(2) = dx(2) * ix1(2) + this%e_env_grid_bounds(2,1)
     x(2) = z
 
-    ix1(3) = floor( (x2 - this%e_env_grid_bounds(3,1)) / this%e_env_grid_dx(3) )
+    ix1(3) = floor( (x2 - this%e_env_grid_bounds(3,1)) / dx(3) )
+    ix1(3) = max( 0, min( ix1(3), this%e_env_grid_shape(3) - 2 ) )
     x1(3) = dx(3) * ix1(3) + this%e_env_grid_bounds(3,1)
     x(3) = x2
 
-    ix1(3) = floor( (x3 - this%e_env_grid_bounds(4,1)) / this%e_env_grid_dx(4) )
-    x1(3) = dx(3) * ix1(3) + this%e_env_grid_bounds(4,1)
-    x(3) = x3
+    ix1(4) = floor( (x3 - this%e_env_grid_bounds(4,1)) / dx(4) )
+    ix1(4) = max( 0, min( ix1(4), this%e_env_grid_shape(4) - 2 ) )
+    x1(4) = dx(4) * ix1(4) + this%e_env_grid_bounds(4,1)
+    x(4) = x3
 
     env = interp_4d( x, ix1, x1, dx, this%e_env_buffer_3d )
 
@@ -1706,6 +1957,176 @@ end subroutine get_env_laguerre_3d_zpulse_flyfoc
 
 
 !-----------------------------------------------------------------------------------------
+subroutine get_env_lab_2d_zpulse_flyfoc( this, t, x1, x2, env )
+
+  ! Evaluate the continuous ASTrL flying-focus envelope in laboratory
+  ! coordinates.  The carrier direction n and the focal trajectory are
+  ! independent.  Focal points lie along focus_start -> focus_end.
+
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  real(p_double), intent(in) :: t, x1, x2
+  complex(p_double), intent(out) :: env
+
+  integer :: i3, nz0
+  real(p_double) :: s0, delay, t_focus, beam_coord
+  real(p_double) :: n1, n2, m1, m2, u, v
+  real(p_double), dimension(3) :: r0, dr
+  real(p_k_fparse), dimension(1) :: fparser_arr
+
+  nz0 = this%integral_size
+  n1 = this%carrier_dir(1)
+  n2 = this%carrier_dir(2)
+  m1 = -n2
+  m2 =  n1
+
+  ! Absolute longitudinal coordinate along the carrier direction.  The
+  ! temporal envelope propagates at vg; the optical carrier remains at c.
+  beam_coord = n1*x1 + n2*x2
+
+  do i3 = 1, nz0
+
+    s0 = (i3 - 1) * this%dz0
+    r0 = this%focus_start + s0 * this%focus_dir
+    dr(:) = 0.0_p_double
+    dr(1) = x1 - r0(1)
+    dr(2) = x2 - r0(2)
+
+    u = n1*dr(1) + n2*dr(2)
+    v = m1*dr(1) + m2*dr(2)
+
+    ! Required arrival time of this constituent at its waist.
+    t_focus = this%focus_t_start + s0 / this%vff
+
+    ! t_envelope(forward) evaluates tau = t-delay-z+xi0.  Passing
+    ! z=beam_coord/vg makes the envelope travel along n at vg.  Choose
+    ! delay so tau=lon_center at (r0,t_focus).
+    delay = t_focus - ( n1*r0(1) + n2*r0(2) ) / this%vg &
+            + this%xi0 - this%lon_center()
+
+    this%buf_1d(i3) = gaussian_beam_2d( u, v, this%omega0, this%zr, &
+                                         0.0_p_double, 0.0_p_double ) &
+                       * this%t_envelope( t - delay, beam_coord / this%vg )
+
+    if( this%focal_weight_type .eq. p_func ) then
+      fparser_arr(1) = s0
+      this%buf_1d(i3) = this%buf_1d(i3) * eval( this%focal_weight_math_func, fparser_arr )
+    endif
+
+    if( this%focal_phase_type .eq. p_func ) then
+      fparser_arr(1) = s0
+      this%buf_1d(i3) = this%buf_1d(i3) &
+        * exp( cmplx( 0.0_p_double, eval( this%focal_phase_math_func, fparser_arr ), kind=p_double ) )
+    endif
+
+  enddo
+
+  env = integrate_astrl_samples( this%buf_1d, nz0, this%dz0 ) * this%env_norm
+
+end subroutine get_env_lab_2d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
+subroutine get_field_lab_2d_zpulse_flyfoc( this, t, x1, x2, field )
+
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  real(p_double), intent(in) :: t, x1, x2
+  complex(p_double), intent(out) :: field
+
+  real(p_double) :: beam_coord, fast_phase
+  complex(p_double) :: env
+
+  beam_coord = this%carrier_dir(1)*x1 + this%carrier_dir(2)*x2
+  fast_phase = this%omega0 * ( t - beam_coord ) - this%phase0
+
+  call this%get_env_lab_2d( t, x1, x2, env )
+  field = env * exp( cmplx( 0.0_p_double, fast_phase, kind=p_double ) )
+
+end subroutine get_field_lab_2d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
+subroutine get_env_lab_3d_zpulse_flyfoc( this, t, x1, x2, x3, env )
+
+  ! Fully vectorial 3D laboratory flying-focus envelope.  The carrier
+  ! direction and focal trajectory are independent.  The Gaussian
+  ! constituent is evaluated in the orthonormal beam frame (n,p,s).
+
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  real(p_double), intent(in) :: t, x1, x2, x3
+  complex(p_double), intent(out) :: env
+
+  integer :: i3, nz0
+  real(p_double) :: s0, delay, t_focus, beam_coord
+  real(p_double) :: u, v1, v2
+  real(p_double), dimension(3) :: r, r0, dr
+  real(p_k_fparse), dimension(1) :: fparser_arr
+
+  nz0 = this%integral_size
+  r = (/ x1, x2, x3 /)
+  beam_coord = dot_product( this%carrier_dir, r )
+
+  do i3 = 1, nz0
+
+    s0 = (i3 - 1) * this%dz0
+    r0 = this%focus_start + s0 * this%focus_dir
+    dr = r - r0
+
+    u  = dot_product( this%carrier_dir, dr )
+    v1 = dot_product( this%lab_basis_p, dr )
+    v2 = dot_product( this%lab_basis_s, dr )
+
+    t_focus = this%focus_t_start + s0 / this%vff
+    delay = t_focus - dot_product( this%carrier_dir, r0 ) / this%vg &
+            + this%xi0 - this%lon_center()
+
+    this%buf_1d(i3) = gaussian_beam_3d( u, v1, v2, this%omega0, this%zr, &
+                                         0.0_p_double, 0.0_p_double, 0.0_p_double ) &
+                       * this%t_envelope( t - delay, beam_coord / this%vg )
+
+    if( this%focal_weight_type .eq. p_func ) then
+      fparser_arr(1) = s0
+      this%buf_1d(i3) = this%buf_1d(i3) * eval( this%focal_weight_math_func, fparser_arr )
+    endif
+
+    if( this%focal_phase_type .eq. p_func ) then
+      fparser_arr(1) = s0
+      this%buf_1d(i3) = this%buf_1d(i3) &
+        * exp( cmplx( 0.0_p_double, eval( this%focal_phase_math_func, fparser_arr ), kind=p_double ) )
+    endif
+
+  enddo
+
+  env = integrate_astrl_samples( this%buf_1d, nz0, this%dz0 ) * this%env_norm
+
+end subroutine get_env_lab_3d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
+subroutine get_field_lab_3d_zpulse_flyfoc( this, t, x1, x2, x3, field )
+
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  real(p_double), intent(in) :: t, x1, x2, x3
+  complex(p_double), intent(out) :: field
+
+  real(p_double) :: beam_coord, fast_phase
+  real(p_double), dimension(3) :: r
+  complex(p_double) :: env
+
+  r = (/ x1, x2, x3 /)
+  beam_coord = dot_product( this%carrier_dir, r )
+  fast_phase = this%omega0 * ( t - beam_coord ) - this%phase0
+
+  call this%get_env_lab_3d( t, x1, x2, x3, env )
+  field = env * exp( cmplx( 0.0_p_double, fast_phase, kind=p_double ) )
+
+end subroutine get_field_lab_3d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
 subroutine get_env_astrl_2d_zpulse_flyfoc( this, t, z, x2, env )
 
   class( t_zpulse_flyfoc ), intent(inout) :: this
@@ -1713,16 +2134,22 @@ subroutine get_env_astrl_2d_zpulse_flyfoc( this, t, z, x2, env )
   complex(p_double), intent(out) :: env 
 
   integer :: i3, nz0 
-  real(p_double) :: z0, delay, xperp0
+  real(p_double) :: z0, delay, xperp0, prop_sign, z_beam
   real(p_k_fparse), dimension(1) :: fparser_arr 
 
   nz0 = this%integral_size
+
+  if( this%propagation .eq. p_forward ) then
+    prop_sign = 1.0_p_double
+  else
+    prop_sign = -1.0_p_double
+  endif
 
   do i3 = 1, nz0
     
     z0 = this%z1 + (i3 - 1) * this%dz0
 
-    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - 1 ) 
+    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - prop_sign )
 
     if( this%focal_xperp_type .eq. p_func ) then 
       fparser_arr(1) = z0 
@@ -1731,8 +2158,10 @@ subroutine get_env_astrl_2d_zpulse_flyfoc( this, t, z, x2, env )
       xperp0 = this%per_center(1)
     endif 
 
-    this%buf_1d(i3) = gaussian_beam_2d( z, x2, this%omega0, this%zr, z0, xperp0 ) &
-                   * this%t_envelope( t - delay, z ) 
+    ! Reverse the paraxial propagation coordinate for a backward beam.
+    z_beam = z0 + prop_sign * ( z - z0 )
+    this%buf_1d(i3) = gaussian_beam_2d( z_beam, x2, this%omega0, this%zr, z0, xperp0 ) &
+                   * this%t_envelope( t - delay, z )
 
     if( this%focal_weight_type .eq. p_func ) then 
       fparser_arr(1) = z0 
@@ -1746,9 +2175,7 @@ subroutine get_env_astrl_2d_zpulse_flyfoc( this, t, z, x2, env )
 
   enddo
 
-  ! composite simpson's rule: int_a^b f = (b-a)/6 * [ f(a) + f(b) + 4 f((a+b)/2)]
-  env = this%dz0 * (1/3.0_p_double) *(this%buf_1d(1) + this%buf_1d(nz0) + &
-              4*sum(this%buf_1d(2:nz0-1:2))+2*sum(this%buf_1d(3:nz0-2:2)) )
+  env = integrate_astrl_samples( this%buf_1d, nz0, this%dz0 )
 
   env = env * this%env_norm 
 
@@ -1766,16 +2193,22 @@ subroutine get_env_astrl_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
   complex(p_double), intent(out) :: env 
 
   integer :: i3, nz0 
-  real(p_double) :: z0, delay, xperp0, yperp0
+  real(p_double) :: z0, delay, xperp0, yperp0, prop_sign, z_beam
   real(p_k_fparse), dimension(1) :: fparser_arr 
 
   nz0 = this%integral_size
+
+  if( this%propagation .eq. p_forward ) then
+    prop_sign = 1.0_p_double
+  else
+    prop_sign = -1.0_p_double
+  endif
 
   do i3 = 1, nz0
     
     z0 = this%z1 + (i3 - 1) * this%dz0
 
-    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - 1 ) 
+    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - prop_sign ) 
 
     if( this%focal_xperp_type .eq. p_func ) then 
       fparser_arr(1) = z0 
@@ -1786,7 +2219,8 @@ subroutine get_env_astrl_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
       yperp0 = this%per_center(2)
     endif 
 
-    this%buf_1d(i3) = gaussian_beam_3d( z, x2, x3, this%omega0, this%zr, z0, xperp0, yperp0 ) &
+    z_beam = z0 + prop_sign * ( z - z0 )
+    this%buf_1d(i3) = gaussian_beam_3d( z_beam, x2, x3, this%omega0, this%zr, z0, xperp0, yperp0 ) &
                    * this%t_envelope( t - delay, z ) 
 
     if( this%focal_weight_type .eq. p_func ) then 
@@ -1801,9 +2235,7 @@ subroutine get_env_astrl_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
 
   enddo
 
-  ! composite simpson's rule: int_a^b f = (b-a)/6 * [ f(a) + f(b) + 4 f((a+b)/2)]
-  env = this%dz0 * (1/3.0_p_double) *(this%buf_1d(1) + this%buf_1d(nz0) + &
-              4*sum(this%buf_1d(2:nz0-1:2))+2*sum(this%buf_1d(3:nz0-2:2)) )
+  env = integrate_astrl_samples( this%buf_1d, nz0, this%dz0 )
 
   env = env * this%env_norm 
 
@@ -1820,16 +2252,22 @@ subroutine get_env_astrl_laguerre_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
   complex(p_double), intent(out) :: env 
 
   integer :: i3, nz0 
-  real(p_double) :: z0, delay, xperp0, yperp0
+  real(p_double) :: z0, delay, xperp0, yperp0, prop_sign, z_beam
   real(p_k_fparse), dimension(1) :: fparser_arr 
 
   nz0 = this%integral_size
+
+  if( this%propagation .eq. p_forward ) then
+    prop_sign = 1.0_p_double
+  else
+    prop_sign = -1.0_p_double
+  endif
 
   do i3 = 1, nz0
     
     z0 = this%z1 + (i3 - 1) * this%dz0
 
-    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - 1 ) 
+    delay = ( z0 - this%z_lead ) * ( this%vg/this%vff - prop_sign ) 
 
     if( this%focal_xperp_type .eq. p_func ) then 
       fparser_arr(1) = z0 
@@ -1840,7 +2278,8 @@ subroutine get_env_astrl_laguerre_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
       yperp0 = this%per_center(2)
     endif 
 
-    this%buf_1d(i3) = laguerre_beam_3d( z, x2, x3, this%omega0, this%zr, this%per_w0(1), z0, &
+    z_beam = z0 + prop_sign * ( z - z0 )
+    this%buf_1d(i3) = laguerre_beam_3d( z_beam, x2, x3, this%omega0, this%zr, this%per_w0(1), z0, &
                                         xperp0, yperp0, &
                                         this%per_tem_mode(2), this%per_tem_mode(1) ) &
                    * this%t_envelope( t - delay, z ) 
@@ -1857,9 +2296,7 @@ subroutine get_env_astrl_laguerre_3d_zpulse_flyfoc( this, t, z, x2, x3, env )
 
   enddo
 
-  ! composite simpson's rule: int_a^b f = (b-a)/6 * [ f(a) + f(b) + 4 f((a+b)/2)]
-  env = this%dz0 * (1/3.0_p_double) *(this%buf_1d(1) + this%buf_1d(nz0) + &
-              4*sum(this%buf_1d(2:nz0-1:2))+2*sum(this%buf_1d(3:nz0-2:2)) )
+  env = integrate_astrl_samples( this%buf_1d, nz0, this%dz0 )
 
   env = env * this%env_norm 
 
@@ -2075,8 +2512,8 @@ subroutine launch_wall_2d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, d
           t_2 = t_sim
         endif 
 
-        fast_phase = this%omega0 * ( t - prop_sign * z )
-        fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 )
+        fast_phase = this%omega0 * ( t - prop_sign * z ) - prop_sign * this%phase0
+        fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 ) - prop_sign * this%phase0
 
         ! z, r_2
         call this%get_env_2d( t, z, r_2, env )
@@ -2163,6 +2600,11 @@ subroutine launch_wall_t0_2d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim
   real(p_double) :: prop_sign
   complex(p_double) :: cos_pol, sin_pol
 
+  if( this%use_lab_geometry ) then
+    call this%launch_lab_t0_2d( b, e, g_space, nx_p_min, t_sim, dt, no_co )
+    return
+  endif
+
   ! Global box sizes
   call get_x_bnd( g_space, g_x_range )
 
@@ -2216,8 +2658,8 @@ subroutine launch_wall_t0_2d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim
         t_2 = t_sim
       endif 
 
-      fast_phase = this%omega0 * ( t - prop_sign * z )
-      fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 )
+      fast_phase = this%omega0 * ( t - prop_sign * z ) - prop_sign * this%phase0
+      fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 ) - prop_sign * this%phase0
 
       ! z, r_2
       call this%get_env_2d( t, z, r_2, env )
@@ -2253,6 +2695,169 @@ end subroutine launch_wall_t0_2d_zpulse_flyfoc
 
 
 !-----------------------------------------------------------------------------------------
+subroutine launch_lab_t0_2d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, dt, no_co )
+
+  ! Initialize a 2D flying-focus field whose carrier direction is independent
+  ! of its focal trajectory.  The field basis is rotated with the carrier:
+  !   n = (cos(theta), sin(theta), 0)
+  !   p = (-sin(theta), cos(theta), 0)
+  !   s = (0,0,1)
+  ! and pol mixes p and s.  This reduces to the legacy x1-propagating
+  ! convention at theta=0.
+
+  implicit none
+
+  integer, parameter :: rank = 2
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  type( t_vdf ), intent(inout) :: b, e
+  type( t_space ), intent(in) :: g_space
+  integer, dimension(:), intent(in) :: nx_p_min
+  real(p_double), intent(in) :: t_sim, dt
+  class( t_node_conf ), intent(in) :: no_co
+
+  real(p_double), dimension(2,rank) :: g_x_range
+  real(p_double), dimension(rank) :: ldx
+  real(p_double) :: xmin1, xmin2, x1, x2, x1h, x2h
+  real(p_double) :: ct, st, cp, sp
+  integer :: i1, i2
+  complex(p_double) :: f_e1, f_e2, f_e3, f_b1, f_b2, f_b3
+
+  call get_x_bnd( g_space, g_x_range )
+  ldx(1:2) = real( b%dx_(1:2), p_double )
+  xmin1 = real( g_x_range(p_lower,1), p_double )
+  xmin2 = real( g_x_range(p_lower,2), p_double )
+
+  select case( this%interpolation )
+  case( p_linear, p_cubic )
+    ! no coordinate correction
+  case( p_quadratic, p_quartic )
+    xmin1 = xmin1 + 0.5_p_double*ldx(1)
+    xmin2 = xmin2 + 0.5_p_double*ldx(2)
+  end select
+
+  ct = this%carrier_dir(1)
+  st = this%carrier_dir(2)
+  cp = cos( this%pol )
+  sp = sin( this%pol )
+
+  do i2 = lbound(e%f2,3), ubound(e%f2,3)
+    x2 = xmin2 + real( i2 - 1 + nx_p_min(2), p_double ) * ldx(2)
+    x2h = x2 + 0.5_p_double*ldx(2)
+
+    do i1 = lbound(e%f2,2), ubound(e%f2,2)
+      x1 = xmin1 + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+      x1h = x1 + 0.5_p_double*ldx(1)
+
+      ! Yee locations: E1(x+1/2,y), E2(x,y+1/2), E3(x,y);
+      ! B1(x,y+1/2), B2(x+1/2,y), B3(x+1/2,y+1/2).
+      call this%get_field_lab_2d( t_sim, x1h, x2,  f_e1 )
+      call this%get_field_lab_2d( t_sim, x1,  x2h, f_e2 )
+      call this%get_field_lab_2d( t_sim, x1,  x2,  f_e3 )
+      call this%get_field_lab_2d( t_sim, x1,  x2h, f_b1 )
+      call this%get_field_lab_2d( t_sim, x1h, x2,  f_b2 )
+      call this%get_field_lab_2d( t_sim, x1h, x2h, f_b3 )
+
+      ! E = cp*p + sp*s, with p=(-st,ct,0).
+      e%f2(1,i1,i2) = e%f2(1,i1,i2) - st*cp*real(f_e1,p_k_fld)
+      e%f2(2,i1,i2) = e%f2(2,i1,i2) + ct*cp*real(f_e2,p_k_fld)
+      e%f2(3,i1,i2) = e%f2(3,i1,i2) +    sp*real(f_e3,p_k_fld)
+
+      ! B = n x E = cp*s - sp*p.
+      b%f2(1,i1,i2) = b%f2(1,i1,i2) + st*sp*real(f_b1,p_k_fld)
+      b%f2(2,i1,i2) = b%f2(2,i1,i2) - ct*sp*real(f_b2,p_k_fld)
+      b%f2(3,i1,i2) = b%f2(3,i1,i2) +    cp*real(f_b3,p_k_fld)
+
+    enddo
+  enddo
+
+end subroutine launch_lab_t0_2d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
+subroutine launch_lab_t0_3d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, dt, no_co )
+
+  ! Initialize an arbitrary-orientation 3D laboratory flying-focus field.
+  ! The scalar complex beam field is sampled at the native Yee location of
+  ! each component; vector amplitudes are then projected using
+  ! E = cos(pol)*p + sin(pol)*s and B = n x E.
+
+  implicit none
+
+  integer, parameter :: rank = 3
+  class( t_zpulse_flyfoc ), intent(inout) :: this
+  type( t_vdf ), intent(inout) :: b, e
+  type( t_space ), intent(in) :: g_space
+  integer, dimension(:), intent(in) :: nx_p_min
+  real(p_double), intent(in) :: t_sim, dt
+  class( t_node_conf ), intent(in) :: no_co
+
+  real(p_double), dimension(2,rank) :: g_x_range
+  real(p_double), dimension(rank) :: ldx, xmin, x, xh
+  real(p_double), dimension(3) :: ehat, bhat
+  real(p_double) :: cp, sp
+  integer :: i1, i2, i3
+  complex(p_double) :: f_e1, f_e2, f_e3, f_b1, f_b2, f_b3
+
+  call get_x_bnd( g_space, g_x_range )
+  ldx(1:3) = real( b%dx_(1:3), p_double )
+  xmin(1:3) = real( g_x_range(p_lower,1:3), p_double )
+
+  select case( this%interpolation )
+  case( p_linear, p_cubic )
+    ! no coordinate correction
+  case( p_quadratic, p_quartic )
+    xmin = xmin + 0.5_p_double*ldx
+  end select
+
+  cp = cos( this%pol )
+  sp = sin( this%pol )
+  ehat = cp*this%lab_basis_p + sp*this%lab_basis_s
+
+  bhat(1) = this%carrier_dir(2)*ehat(3) - this%carrier_dir(3)*ehat(2)
+  bhat(2) = this%carrier_dir(3)*ehat(1) - this%carrier_dir(1)*ehat(3)
+  bhat(3) = this%carrier_dir(1)*ehat(2) - this%carrier_dir(2)*ehat(1)
+
+  do i3 = lbound(e%f3,4), ubound(e%f3,4)
+    x(3) = xmin(3) + real( i3 - 1 + nx_p_min(3), p_double ) * ldx(3)
+    xh(3) = x(3) + 0.5_p_double*ldx(3)
+
+    do i2 = lbound(e%f3,3), ubound(e%f3,3)
+      x(2) = xmin(2) + real( i2 - 1 + nx_p_min(2), p_double ) * ldx(2)
+      xh(2) = x(2) + 0.5_p_double*ldx(2)
+
+      do i1 = lbound(e%f3,2), ubound(e%f3,2)
+        x(1) = xmin(1) + real( i1 - 1 + nx_p_min(1), p_double ) * ldx(1)
+        xh(1) = x(1) + 0.5_p_double*ldx(1)
+
+        ! Yee locations:
+        ! E1(x+1/2,y,z), E2(x,y+1/2,z), E3(x,y,z+1/2)
+        ! B1(x,y+1/2,z+1/2), B2(x+1/2,y,z+1/2),
+        ! B3(x+1/2,y+1/2,z).
+        call this%get_field_lab_3d( t_sim, xh(1), x(2),  x(3),  f_e1 )
+        call this%get_field_lab_3d( t_sim, x(1),  xh(2), x(3),  f_e2 )
+        call this%get_field_lab_3d( t_sim, x(1),  x(2),  xh(3), f_e3 )
+        call this%get_field_lab_3d( t_sim, x(1),  xh(2), xh(3), f_b1 )
+        call this%get_field_lab_3d( t_sim, xh(1), x(2),  xh(3), f_b2 )
+        call this%get_field_lab_3d( t_sim, xh(1), xh(2), x(3),  f_b3 )
+
+        e%f3(1,i1,i2,i3) = e%f3(1,i1,i2,i3) + ehat(1)*real(f_e1,p_k_fld)
+        e%f3(2,i1,i2,i3) = e%f3(2,i1,i2,i3) + ehat(2)*real(f_e2,p_k_fld)
+        e%f3(3,i1,i2,i3) = e%f3(3,i1,i2,i3) + ehat(3)*real(f_e3,p_k_fld)
+
+        b%f3(1,i1,i2,i3) = b%f3(1,i1,i2,i3) + bhat(1)*real(f_b1,p_k_fld)
+        b%f3(2,i1,i2,i3) = b%f3(2,i1,i2,i3) + bhat(2)*real(f_b2,p_k_fld)
+        b%f3(3,i1,i2,i3) = b%f3(3,i1,i2,i3) + bhat(3)*real(f_b3,p_k_fld)
+
+      enddo
+    enddo
+  enddo
+
+end subroutine launch_lab_t0_3d_zpulse_flyfoc
+!-----------------------------------------------------------------------------------------
+
+
+!-----------------------------------------------------------------------------------------
 subroutine launch_wall_3d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, dt, no_co )
 
 
@@ -2285,6 +2890,11 @@ subroutine launch_wall_3d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, d
 
   integer :: lbnd, rbnd, i1start, i1finish
   logical :: lbnd_in_domain, rbnd_in_domain, domain_enclosed, lbnd_right_of_domain
+
+  if( this%use_lab_geometry ) then
+    call this%launch_lab_t0_3d( b, e, g_space, nx_p_min, t_sim, dt, no_co )
+    return
+  endif
     
 
   ! Turn off antenna if pulse has ended
@@ -2394,8 +3004,8 @@ subroutine launch_wall_3d_zpulse_flyfoc( this, b, e, g_space, nx_p_min, t_sim, d
             t_2 = t_sim
           endif 
 
-          fast_phase = this%omega0 * ( t - prop_sign * z )
-          fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 )
+          fast_phase = this%omega0 * ( t - prop_sign * z ) - prop_sign * this%phase0
+          fast_phase_2 = this%omega0 * ( t_2 - prop_sign * z_2 ) - prop_sign * this%phase0
 
           call this%get_env_3d( t, z, r1, r2, env )
           field_0_2_0 = env * exp( cmplx( 0, fast_phase ) )

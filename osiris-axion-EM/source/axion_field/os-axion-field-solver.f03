@@ -207,6 +207,7 @@ subroutine advance_driven_axion_field_impl( this, emf, dt, no_co, send_msg, recv
   real(p_double) :: lap, idx2, idy2, idz2, m2, dt2, phi_nm, phi_np, phi_new
   real(p_double) :: rhs, kx, ky, kz, omega_d, cosfac, twopi, lx, ly, lz, phi0
   real(p_double) :: src, edotb
+  real(p_double) :: src_test, xcell, xi
 
   if ( .not. this%if_initialized ) return
 
@@ -297,7 +298,31 @@ subroutine advance_driven_axion_field_impl( this, emf, dt, no_co, send_msg, recv
       lap = ( real(this%pi%f1(1,i1+1),p_double) - 2.0_p_double * phi_np + real(this%pi%f1(1,i1-1),p_double) ) * idx2
       edotb = edotb_total_cell_center_1d( this, emf, i1 )
       this%diag_edotb%f1(1,i1) = real( edotb, p_k_fld )
+
+      ! Physical axion-photon source.
       src = - this%g_agg * edotb
+
+      ! Optional analytic travelling source for the minimal 1D phase-matching
+      ! benchmark. Both the Gaussian envelope and its carrier travel at
+      ! test_src_v:
+      !
+      !   S_test = A exp[-xi^2/(2 sigma^2)] cos(k xi + phase),
+      !   xi     = x - x0 - v t.
+      !
+      ! Hence omega_s = k*v. For a target mode k_a, choose
+      ! test_src_k = k_a and test_src_v = omega_a/k_a.
+      !
+      ! This source is independent of g_agg, so the benchmark can run with
+      ! g_agg = 0 and no electromagnetic fields.
+      if ( this%test_src_on ) then
+        xcell = this%x1_cell_center0 + real(i1-1,p_double) * this%dx(1)
+        xi = xcell - this%test_src_x0 - this%test_src_v * this%test_src_time
+        src_test = this%test_src_ampl * &
+                   exp( -0.5_p_double * ( xi / this%test_src_sigma )**2 ) * &
+                   cos( this%test_src_k * xi + this%test_src_phase )
+        src = src + src_test
+      endif
+
       this%edotb_max = max( this%edotb_max, abs(edotb) )
       this%edotb_sum = this%edotb_sum + edotb
       this%src_max   = max( this%src_max, abs(src) )
@@ -370,26 +395,27 @@ subroutine advance_driven_axion_field_impl( this, emf, dt, no_co, send_msg, recv
     enddo
   end select
 
+  if ( this%test_src_on ) this%test_src_time = this%test_src_time + dt
+
   call apply_axion_bc_scalar( this, this%a )
   call apply_axion_bc_scalar( this, this%pi )
   call apply_axion_bc_scalar( this, this%diag_edotb )
 end subroutine advance_driven_axion_field_impl
 
 
-! Evaluate the centered linearised E dot B source in one spatial dimension.
+! Evaluate the centered total E dot B source in one spatial dimension.
 !
-! The coherent-field validation uses the field split
+! The field split is
 !
-!   E = E0 + dE,    B = B0 + dB,
+!   E = E0 + dE,    B = B0 + dB.
 !
-! but keeps only terms that are at most first order in the perturbative
-! fields:
+! In 1D retain the complete product
 !
-!   E dot B -> E0 dot B0 + E0 dot dB + dE dot B0.
+!   E dot B = E0 dot B0 + E0 dot dB + dE dot B0 + dE dot dB.
 !
-! The nonlinear perturbative product dE dot dB is deliberately omitted here.
-! It can dominate once the perturbative response leaves the linear regime and
-! obscures the Beyer-style early-time comparison.
+! The dE dot dB term is quadratic under the original standing-wave
+! perturbative ordering, but is required for the fusion-driven nonlinear
+! axion-photon feedback studied here.
 real(p_double) function edotb_total_cell_center_1d( this, emf, i1 ) result(val)
   class(t_axion_field), intent(in) :: this
   class(t_emf), intent(in) :: emf
@@ -417,10 +443,11 @@ real(p_double) function edotb_total_cell_center_1d( this, emf, i1 ) result(val)
 
   val = ex0_c * bx0_c + ey0_c * by0_c + ez0_c * bz0_c + &
         ex0_c * bxp_c + ey0_c * byp_c + ez0_c * bzp_c + &
-        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c
+        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c + &
+        exp_c * bxp_c + eyp_c * byp_c + ezp_c * bzp_c
 end function edotb_total_cell_center_1d
 
-! Evaluate the centered linearised E dot B source in two spatial dimensions.
+! Evaluate the centered total E dot B source in two spatial dimensions.
 real(p_double) function edotb_total_cell_center_2d( this, emf, i1, i2 ) result(val)
   class(t_axion_field), intent(in) :: this
   class(t_emf), intent(in) :: emf
@@ -451,10 +478,11 @@ real(p_double) function edotb_total_cell_center_2d( this, emf, i1, i2 ) result(v
 
   val = ex0_c * bx0_c + ey0_c * by0_c + ez0_c * bz0_c + &
         ex0_c * bxp_c + ey0_c * byp_c + ez0_c * bzp_c + &
-        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c
+        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c + &
+        exp_c * bxp_c + eyp_c * byp_c + ezp_c * bzp_c
 end function edotb_total_cell_center_2d
 
-! Evaluate the centered linearised E dot B source in three spatial dimensions.
+! Evaluate the centered total E dot B source in three spatial dimensions.
 real(p_double) function edotb_total_cell_center_3d( this, emf, i1, i2, i3 ) result(val)
   class(t_axion_field), intent(in) :: this
   class(t_emf), intent(in) :: emf
@@ -489,7 +517,8 @@ real(p_double) function edotb_total_cell_center_3d( this, emf, i1, i2, i3 ) resu
 
   val = ex0_c * bx0_c + ey0_c * by0_c + ez0_c * bz0_c + &
         ex0_c * bxp_c + ey0_c * byp_c + ez0_c * bzp_c + &
-        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c
+        exp_c * bx0_c + eyp_c * by0_c + ezp_c * bz0_c + &
+        exp_c * bxp_c + eyp_c * byp_c + ezp_c * bzp_c
 end function edotb_total_cell_center_3d
 
 
@@ -519,8 +548,11 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
   case (1)
     do i1 = 1, this%nx(1)
       curlx = 0.0_p_double
-      curly = - ( real(this%pert%b%f1(3,i1+1),p_double) - real(this%pert%b%f1(3,i1),p_double) ) / this%dx(1)
-      curlz =   ( real(this%pert%b%f1(2,i1+1),p_double) - real(this%pert%b%f1(2,i1),p_double) ) / this%dx(1)
+      ! Native-OSIRIS Yee orientation: E1 occupies the same electric sites as E0,
+      ! and B1 the same magnetic sites as B0.  Therefore Ampere uses the
+      ! same backward magnetic differences as dedt_1d_yee.
+      curly = - ( real(this%pert%b%f1(3,i1),p_double) - real(this%pert%b%f1(3,i1-1),p_double) ) / this%dx(1)
+      curlz =   ( real(this%pert%b%f1(2,i1),p_double) - real(this%pert%b%f1(2,i1-1),p_double) ) / this%dx(1)
 
       sx = source_ex_1d( this, emf, dt_full, i1 )
       sy = source_ey_1d( this, emf, dt_full, i1 )
@@ -532,9 +564,11 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
         jz = real( jay1%f1(3,i1), p_double )
       endif
 
-      this%pert%e%f1(1,i1) = this%pert%e%f1(1,i1) + real( dt_half * ( curlx - sx - jx ), p_k_fld )
-      this%pert%e%f1(2,i1) = this%pert%e%f1(2,i1) + real( dt_half * ( curly - sy - jy ), p_k_fld )
-      this%pert%e%f1(3,i1) = this%pert%e%f1(3,i1) + real( dt_half * ( curlz - sz - jz ), p_k_fld )
+      ! With the code convention (KG source = -g E dot B), the perturbative
+      ! Ampere axion source enters with +s; keep the current contribution as -j.
+      this%pert%e%f1(1,i1) = this%pert%e%f1(1,i1) + real( dt_half * ( curlx + sx - jx ), p_k_fld )
+      this%pert%e%f1(2,i1) = this%pert%e%f1(2,i1) + real( dt_half * ( curly + sy - jy ), p_k_fld )
+      this%pert%e%f1(3,i1) = this%pert%e%f1(3,i1) + real( dt_half * ( curlz + sz - jz ), p_k_fld )
 
       dmag = sqrt( sx*sx + sy*sy + sz*sz )
       this%diag_emsrcmag%f1(1,i1) = real( dmag, p_k_fld )
@@ -545,10 +579,11 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
   case (2)
     do i2 = 1, this%nx(2)
       do i1 = 1, this%nx(1)
-        curlx = ( real(this%pert%b%f2(3,i1,i2+1),p_double) - real(this%pert%b%f2(3,i1,i2),p_double) ) / this%dx(2)
-        curly = - ( real(this%pert%b%f2(3,i1+1,i2),p_double) - real(this%pert%b%f2(3,i1,i2),p_double) ) / this%dx(1)
-        curlz = ( real(this%pert%b%f2(2,i1+1,i2),p_double) - real(this%pert%b%f2(2,i1,i2),p_double) ) / this%dx(1) - &
-                ( real(this%pert%b%f2(1,i1,i2+1),p_double) - real(this%pert%b%f2(1,i1,i2),p_double) ) / this%dx(2)
+        ! Match native OSIRIS dedt_2d_yee: Ampere uses backward magnetic differences.
+        curlx = ( real(this%pert%b%f2(3,i1,i2),p_double) - real(this%pert%b%f2(3,i1,i2-1),p_double) ) / this%dx(2)
+        curly = - ( real(this%pert%b%f2(3,i1,i2),p_double) - real(this%pert%b%f2(3,i1-1,i2),p_double) ) / this%dx(1)
+        curlz = ( real(this%pert%b%f2(2,i1,i2),p_double) - real(this%pert%b%f2(2,i1-1,i2),p_double) ) / this%dx(1) - &
+                ( real(this%pert%b%f2(1,i1,i2),p_double) - real(this%pert%b%f2(1,i1,i2-1),p_double) ) / this%dx(2)
 
         sx = source_ex_2d( this, emf, dt_full, i1, i2 )
         sy = source_ey_2d( this, emf, dt_full, i1, i2 )
@@ -560,9 +595,9 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
           jz = real( jay1%f2(3,i1,i2), p_double )
         endif
 
-        this%pert%e%f2(1,i1,i2) = this%pert%e%f2(1,i1,i2) + real( dt_half * ( curlx - sx - jx ), p_k_fld )
-        this%pert%e%f2(2,i1,i2) = this%pert%e%f2(2,i1,i2) + real( dt_half * ( curly - sy - jy ), p_k_fld )
-        this%pert%e%f2(3,i1,i2) = this%pert%e%f2(3,i1,i2) + real( dt_half * ( curlz - sz - jz ), p_k_fld )
+        this%pert%e%f2(1,i1,i2) = this%pert%e%f2(1,i1,i2) + real( dt_half * ( curlx + sx - jx ), p_k_fld )
+        this%pert%e%f2(2,i1,i2) = this%pert%e%f2(2,i1,i2) + real( dt_half * ( curly + sy - jy ), p_k_fld )
+        this%pert%e%f2(3,i1,i2) = this%pert%e%f2(3,i1,i2) + real( dt_half * ( curlz + sz - jz ), p_k_fld )
 
         dmag = sqrt( sx*sx + sy*sy + sz*sz )
         this%diag_emsrcmag%f2(1,i1,i2) = real( dmag, p_k_fld )
@@ -575,12 +610,13 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
     do i3 = 1, this%nx(3)
       do i2 = 1, this%nx(2)
         do i1 = 1, this%nx(1)
-          curlx = ( real(this%pert%b%f3(3,i1,i2+1,i3),p_double) - real(this%pert%b%f3(3,i1,i2,i3),p_double) ) / this%dx(2) - &
-                  ( real(this%pert%b%f3(2,i1,i2,i3+1),p_double) - real(this%pert%b%f3(2,i1,i2,i3),p_double) ) / this%dx(3)
-          curly = ( real(this%pert%b%f3(1,i1,i2,i3+1),p_double) - real(this%pert%b%f3(1,i1,i2,i3),p_double) ) / this%dx(3) - &
-                  ( real(this%pert%b%f3(3,i1+1,i2,i3),p_double) - real(this%pert%b%f3(3,i1,i2,i3),p_double) ) / this%dx(1)
-          curlz = ( real(this%pert%b%f3(2,i1+1,i2,i3),p_double) - real(this%pert%b%f3(2,i1,i2,i3),p_double) ) / this%dx(1) - &
-                  ( real(this%pert%b%f3(1,i1,i2+1,i3),p_double) - real(this%pert%b%f3(1,i1,i2,i3),p_double) ) / this%dx(2)
+          ! Match native OSIRIS dedt_3d_yee: Ampere uses backward magnetic differences.
+          curlx = ( real(this%pert%b%f3(3,i1,i2,i3),p_double) - real(this%pert%b%f3(3,i1,i2-1,i3),p_double) ) / this%dx(2) - &
+                  ( real(this%pert%b%f3(2,i1,i2,i3),p_double) - real(this%pert%b%f3(2,i1,i2,i3-1),p_double) ) / this%dx(3)
+          curly = ( real(this%pert%b%f3(1,i1,i2,i3),p_double) - real(this%pert%b%f3(1,i1,i2,i3-1),p_double) ) / this%dx(3) - &
+                  ( real(this%pert%b%f3(3,i1,i2,i3),p_double) - real(this%pert%b%f3(3,i1-1,i2,i3),p_double) ) / this%dx(1)
+          curlz = ( real(this%pert%b%f3(2,i1,i2,i3),p_double) - real(this%pert%b%f3(2,i1-1,i2,i3),p_double) ) / this%dx(1) - &
+                  ( real(this%pert%b%f3(1,i1,i2,i3),p_double) - real(this%pert%b%f3(1,i1,i2-1,i3),p_double) ) / this%dx(2)
 
           sx = source_ex_3d( this, emf, dt_full, i1, i2, i3 )
           sy = source_ey_3d( this, emf, dt_full, i1, i2, i3 )
@@ -592,9 +628,9 @@ subroutine apply_backreaction_axion_field_impl( this, emf, dt_half, dt_full, jay
             jz = real( jay1%f3(3,i1,i2,i3), p_double )
           endif
 
-          this%pert%e%f3(1,i1,i2,i3) = this%pert%e%f3(1,i1,i2,i3) + real( dt_half * ( curlx - sx - jx ), p_k_fld )
-          this%pert%e%f3(2,i1,i2,i3) = this%pert%e%f3(2,i1,i2,i3) + real( dt_half * ( curly - sy - jy ), p_k_fld )
-          this%pert%e%f3(3,i1,i2,i3) = this%pert%e%f3(3,i1,i2,i3) + real( dt_half * ( curlz - sz - jz ), p_k_fld )
+          this%pert%e%f3(1,i1,i2,i3) = this%pert%e%f3(1,i1,i2,i3) + real( dt_half * ( curlx + sx - jx ), p_k_fld )
+          this%pert%e%f3(2,i1,i2,i3) = this%pert%e%f3(2,i1,i2,i3) + real( dt_half * ( curly + sy - jy ), p_k_fld )
+          this%pert%e%f3(3,i1,i2,i3) = this%pert%e%f3(3,i1,i2,i3) + real( dt_half * ( curlz + sz - jz ), p_k_fld )
 
           dmag = sqrt( sx*sx + sy*sy + sz*sz )
           this%diag_emsrcmag%f3(1,i1,i2,i3) = real( dmag, p_k_fld )
@@ -725,18 +761,21 @@ subroutine advance_perturb_b_axion_field_impl( this, dt_half )
       ! In 1D, Faraday's law gives
       !   dB2/dt = + dE3/dx,    dB3/dt = - dE2/dx.
       ! Keep the y/z curl components paired with the corresponding B update.
-      curly = ( real(this%pert%e%f1(3,i1),p_double) - real(this%pert%e%f1(3,i1-1),p_double) ) / this%dx(1)
-      curlz = ( real(this%pert%e%f1(2,i1),p_double) - real(this%pert%e%f1(2,i1-1),p_double) ) / this%dx(1)
+      ! Native-OSIRIS Yee orientation: Faraday uses the same forward
+      ! electric differences as dbdt_1d_yee.
+      curly = ( real(this%pert%e%f1(3,i1+1),p_double) - real(this%pert%e%f1(3,i1),p_double) ) / this%dx(1)
+      curlz = ( real(this%pert%e%f1(2,i1+1),p_double) - real(this%pert%e%f1(2,i1),p_double) ) / this%dx(1)
       this%pert%b%f1(2,i1) = this%pert%b%f1(2,i1) + real( dt_half * curly, p_k_fld )
       this%pert%b%f1(3,i1) = this%pert%b%f1(3,i1) - real( dt_half * curlz, p_k_fld )
     enddo
   case (2)
     do i2 = 1, this%nx(2)
       do i1 = 1, this%nx(1)
-        curlx = ( real(this%pert%e%f2(3,i1,i2),p_double) - real(this%pert%e%f2(3,i1,i2-1),p_double) ) / this%dx(2)
-        curly = ( real(this%pert%e%f2(3,i1,i2),p_double) - real(this%pert%e%f2(3,i1-1,i2),p_double) ) / this%dx(1)
-        curlz = ( real(this%pert%e%f2(2,i1,i2),p_double) - real(this%pert%e%f2(2,i1-1,i2),p_double) ) / this%dx(1) - &
-                ( real(this%pert%e%f2(1,i1,i2),p_double) - real(this%pert%e%f2(1,i1,i2-1),p_double) ) / this%dx(2)
+        ! Match native OSIRIS dbdt_2d_yee: Faraday uses forward electric differences.
+        curlx = ( real(this%pert%e%f2(3,i1,i2+1),p_double) - real(this%pert%e%f2(3,i1,i2),p_double) ) / this%dx(2)
+        curly = ( real(this%pert%e%f2(3,i1+1,i2),p_double) - real(this%pert%e%f2(3,i1,i2),p_double) ) / this%dx(1)
+        curlz = ( real(this%pert%e%f2(2,i1+1,i2),p_double) - real(this%pert%e%f2(2,i1,i2),p_double) ) / this%dx(1) - &
+                ( real(this%pert%e%f2(1,i1,i2+1),p_double) - real(this%pert%e%f2(1,i1,i2),p_double) ) / this%dx(2)
         this%pert%b%f2(1,i1,i2) = this%pert%b%f2(1,i1,i2) - real( dt_half * curlx, p_k_fld )
         this%pert%b%f2(2,i1,i2) = this%pert%b%f2(2,i1,i2) + real( dt_half * curly, p_k_fld )
         this%pert%b%f2(3,i1,i2) = this%pert%b%f2(3,i1,i2) - real( dt_half * curlz, p_k_fld )
@@ -746,12 +785,13 @@ subroutine advance_perturb_b_axion_field_impl( this, dt_half )
     do i3 = 1, this%nx(3)
       do i2 = 1, this%nx(2)
         do i1 = 1, this%nx(1)
-          curlx = ( real(this%pert%e%f3(3,i1,i2,i3),p_double) - real(this%pert%e%f3(3,i1,i2-1,i3),p_double) ) / this%dx(2) - &
-                  ( real(this%pert%e%f3(2,i1,i2,i3),p_double) - real(this%pert%e%f3(2,i1,i2,i3-1),p_double) ) / this%dx(3)
-          curly = ( real(this%pert%e%f3(3,i1,i2,i3),p_double) - real(this%pert%e%f3(3,i1-1,i2,i3),p_double) ) / this%dx(1) - &
-                  ( real(this%pert%e%f3(1,i1,i2,i3),p_double) - real(this%pert%e%f3(1,i1,i2,i3-1),p_double) ) / this%dx(3)
-          curlz = ( real(this%pert%e%f3(2,i1,i2,i3),p_double) - real(this%pert%e%f3(2,i1-1,i2,i3),p_double) ) / this%dx(1) - &
-                  ( real(this%pert%e%f3(1,i1,i2,i3),p_double) - real(this%pert%e%f3(1,i1,i2-1,i3),p_double) ) / this%dx(2)
+          ! Match native OSIRIS dbdt_3d_yee: Faraday uses forward electric differences.
+          curlx = ( real(this%pert%e%f3(3,i1,i2+1,i3),p_double) - real(this%pert%e%f3(3,i1,i2,i3),p_double) ) / this%dx(2) - &
+                  ( real(this%pert%e%f3(2,i1,i2,i3+1),p_double) - real(this%pert%e%f3(2,i1,i2,i3),p_double) ) / this%dx(3)
+          curly = ( real(this%pert%e%f3(3,i1+1,i2,i3),p_double) - real(this%pert%e%f3(3,i1,i2,i3),p_double) ) / this%dx(1) - &
+                  ( real(this%pert%e%f3(1,i1,i2,i3+1),p_double) - real(this%pert%e%f3(1,i1,i2,i3),p_double) ) / this%dx(3)
+          curlz = ( real(this%pert%e%f3(2,i1+1,i2,i3),p_double) - real(this%pert%e%f3(2,i1,i2,i3),p_double) ) / this%dx(1) - &
+                  ( real(this%pert%e%f3(1,i1,i2+1,i3),p_double) - real(this%pert%e%f3(1,i1,i2,i3),p_double) ) / this%dx(2)
           this%pert%b%f3(1,i1,i2,i3) = this%pert%b%f3(1,i1,i2,i3) - real( dt_half * curlx, p_k_fld )
           this%pert%b%f3(2,i1,i2,i3) = this%pert%b%f3(2,i1,i2,i3) + real( dt_half * curly, p_k_fld )
           this%pert%b%f3(3,i1,i2,i3) = this%pert%b%f3(3,i1,i2,i3) - real( dt_half * curlz, p_k_fld )
@@ -819,6 +859,7 @@ real(p_double) function source_ex_1d( this, emf, dt_full, i1 ) result(val)
   real(p_double) :: pt, bx
   pt = 0.5_p_double * ( phi_t_1d(this,dt_full,i1) + phi_t_1d(this,dt_full,i1+1) )
   bx = real(emf%b%f1(1,i1),p_double)
+  if ( this%pert%if_initialized ) bx = bx + real(this%pert%b%f1(1,i1),p_double)
   val = this%g_agg * pt * bx
 end function source_ex_1d
 
@@ -833,6 +874,10 @@ real(p_double) function source_ey_1d( this, emf, dt_full, i1 ) result(val)
   by = 0.5_p_double * ( real(emf%b%f1(2,i1),p_double) + real(emf%b%f1(2,i1-1),p_double) )
   gradx = ( phi_center_1d(this,i1+1) - phi_center_1d(this,i1-1) ) / ( 2.0_p_double * this%dx(1) )
   ez = real(emf%e%f1(3,i1),p_double)
+  if ( this%pert%if_initialized ) then
+    by = by + 0.5_p_double * ( real(this%pert%b%f1(2,i1),p_double) + real(this%pert%b%f1(2,i1-1),p_double) )
+    ez = ez + real(this%pert%e%f1(3,i1),p_double)
+  endif
   val = this%g_agg * ( pt * by - ez * gradx )
 end function source_ey_1d
 
@@ -847,6 +892,10 @@ real(p_double) function source_ez_1d( this, emf, dt_full, i1 ) result(val)
   bz = 0.5_p_double * ( real(emf%b%f1(3,i1),p_double) + real(emf%b%f1(3,i1-1),p_double) )
   gradx = ( phi_center_1d(this,i1+1) - phi_center_1d(this,i1-1) ) / ( 2.0_p_double * this%dx(1) )
   ey = real(emf%e%f1(2,i1),p_double)
+  if ( this%pert%if_initialized ) then
+    bz = bz + 0.5_p_double * ( real(this%pert%b%f1(3,i1),p_double) + real(this%pert%b%f1(3,i1-1),p_double) )
+    ey = ey + real(this%pert%e%f1(2,i1),p_double)
+  endif
   val = this%g_agg * ( pt * bz + ey * gradx )
 end function source_ez_1d
 
@@ -864,6 +913,11 @@ real(p_double) function source_ex_2d( this, emf, dt_full, i1, i2 ) result(val)
   ez = 0.5_p_double * ( real(emf%e%f2(3,i1,i2),p_double) + real(emf%e%f2(3,i1+1,i2),p_double) )
   dyphi = 0.5_p_double * ( ( phi_center_2d(this,i1,i2+1) - phi_center_2d(this,i1,i2-1) ) + &
                             ( phi_center_2d(this,i1+1,i2+1) - phi_center_2d(this,i1+1,i2-1) ) ) / ( 2.0_p_double * this%dx(2) )
+  if ( this%pert%if_initialized ) then
+    bx = bx + 0.5_p_double * ( real(this%pert%b%f2(1,i1,i2),p_double) + real(this%pert%b%f2(1,i1,i2-1),p_double) )
+    ey = ey + 0.5_p_double * ( real(this%pert%e%f2(2,i1,i2),p_double) + real(this%pert%e%f2(2,i1+1,i2),p_double) )
+    ez = ez + 0.5_p_double * ( real(this%pert%e%f2(3,i1,i2),p_double) + real(this%pert%e%f2(3,i1+1,i2),p_double) )
+  endif
   val = this%g_agg * ( pt * bx - ey * dzphi + ez * dyphi )
 end function source_ex_2d
 
@@ -879,6 +933,10 @@ real(p_double) function source_ey_2d( this, emf, dt_full, i1, i2 ) result(val)
   ez = 0.5_p_double * ( real(emf%e%f2(3,i1,i2),p_double) + real(emf%e%f2(3,i1,i2+1),p_double) )
   dxphi = 0.5_p_double * ( ( phi_center_2d(this,i1+1,i2) - phi_center_2d(this,i1-1,i2) ) + &
                             ( phi_center_2d(this,i1+1,i2+1) - phi_center_2d(this,i1-1,i2+1) ) ) / ( 2.0_p_double * this%dx(1) )
+  if ( this%pert%if_initialized ) then
+    by = by + 0.5_p_double * ( real(this%pert%b%f2(2,i1,i2),p_double) + real(this%pert%b%f2(2,i1-1,i2),p_double) )
+    ez = ez + 0.5_p_double * ( real(this%pert%e%f2(3,i1,i2),p_double) + real(this%pert%e%f2(3,i1,i2+1),p_double) )
+  endif
   val = this%g_agg * ( pt * by - ez * dxphi )
 end function source_ey_2d
 
@@ -896,6 +954,12 @@ real(p_double) function source_ez_2d( this, emf, dt_full, i1, i2 ) result(val)
   ey = 0.5_p_double * ( real(emf%e%f2(2,i1,i2),p_double) + real(emf%e%f2(2,i1-1,i2),p_double) )
   dyphi = ( phi_center_2d(this,i1,i2+1) - phi_center_2d(this,i1,i2-1) ) / ( 2.0_p_double * this%dx(2) )
   dxphi = ( phi_center_2d(this,i1+1,i2) - phi_center_2d(this,i1-1,i2) ) / ( 2.0_p_double * this%dx(1) )
+  if ( this%pert%if_initialized ) then
+    bz = bz + 0.25_p_double * ( real(this%pert%b%f2(3,i1,i2),p_double) + real(this%pert%b%f2(3,i1-1,i2),p_double) + &
+                               real(this%pert%b%f2(3,i1,i2-1),p_double) + real(this%pert%b%f2(3,i1-1,i2-1),p_double) )
+    ex = ex + 0.5_p_double * ( real(this%pert%e%f2(1,i1,i2),p_double) + real(this%pert%e%f2(1,i1,i2-1),p_double) )
+    ey = ey + 0.5_p_double * ( real(this%pert%e%f2(2,i1,i2),p_double) + real(this%pert%e%f2(2,i1-1,i2),p_double) )
+  endif
   val = this%g_agg * ( pt * bz - ex * dyphi + ey * dxphi )
 end function source_ez_2d
 
@@ -917,6 +981,18 @@ real(p_double) function source_ex_3d( this, emf, dt_full, i1, i2, i3 ) result(va
           ( phi_center_3d(this,i1,i2+1,i3) - phi_center_3d(this,i1,i2-1,i3) ) / ( 2.0_p_double * this%dx(2) ) + &
           0.25_p_double * ( real(emf%e%f3(3,i1+1,i2,i3),p_double) + real(emf%e%f3(3,i1+1,i2,i3-1),p_double) ) * &
           ( phi_center_3d(this,i1+1,i2+1,i3) - phi_center_3d(this,i1+1,i2-1,i3) ) / ( 2.0_p_double * this%dx(2) )
+  if ( this%pert%if_initialized ) then
+    bx = bx + 0.25_p_double * ( real(this%pert%b%f3(1,i1,i2,i3),p_double) + real(this%pert%b%f3(1,i1,i2-1,i3),p_double) + &
+                               real(this%pert%b%f3(1,i1,i2,i3-1),p_double) + real(this%pert%b%f3(1,i1,i2-1,i3-1),p_double) )
+    term1 = term1 + 0.25_p_double * ( real(this%pert%e%f3(2,i1,i2,i3),p_double) + real(this%pert%e%f3(2,i1,i2-1,i3),p_double) ) * &
+            ( phi_center_3d(this,i1,i2,i3+1) - phi_center_3d(this,i1,i2,i3-1) ) / ( 2.0_p_double * this%dx(3) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(2,i1+1,i2,i3),p_double) + real(this%pert%e%f3(2,i1+1,i2-1,i3),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2,i3+1) - phi_center_3d(this,i1+1,i2,i3-1) ) / ( 2.0_p_double * this%dx(3) )
+    term2 = term2 + 0.25_p_double * ( real(this%pert%e%f3(3,i1,i2,i3),p_double) + real(this%pert%e%f3(3,i1,i2,i3-1),p_double) ) * &
+            ( phi_center_3d(this,i1,i2+1,i3) - phi_center_3d(this,i1,i2-1,i3) ) / ( 2.0_p_double * this%dx(2) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(3,i1+1,i2,i3),p_double) + real(this%pert%e%f3(3,i1+1,i2,i3-1),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2+1,i3) - phi_center_3d(this,i1+1,i2-1,i3) ) / ( 2.0_p_double * this%dx(2) )
+  endif
   val = this%g_agg * ( pt * bx - term1 + term2 )
 end function source_ex_3d
 
@@ -938,6 +1014,18 @@ real(p_double) function source_ey_3d( this, emf, dt_full, i1, i2, i3 ) result(va
           ( phi_center_3d(this,i1,i2,i3+1) - phi_center_3d(this,i1,i2,i3-1) ) / ( 2.0_p_double * this%dx(3) ) + &
           0.25_p_double * ( real(emf%e%f3(1,i1,i2+1,i3),p_double) + real(emf%e%f3(1,i1,i2+1,i3-1),p_double) ) * &
           ( phi_center_3d(this,i1,i2+1,i3+1) - phi_center_3d(this,i1,i2+1,i3-1) ) / ( 2.0_p_double * this%dx(3) )
+  if ( this%pert%if_initialized ) then
+    by = by + 0.25_p_double * ( real(this%pert%b%f3(2,i1,i2,i3),p_double) + real(this%pert%b%f3(2,i1-1,i2,i3),p_double) + &
+                               real(this%pert%b%f3(2,i1,i2,i3-1),p_double) + real(this%pert%b%f3(2,i1-1,i2,i3-1),p_double) )
+    term1 = term1 + 0.25_p_double * ( real(this%pert%e%f3(3,i1,i2,i3),p_double) + real(this%pert%e%f3(3,i1-1,i2,i3),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2,i3) - phi_center_3d(this,i1-1,i2,i3) ) / ( 2.0_p_double * this%dx(1) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(3,i1,i2+1,i3),p_double) + real(this%pert%e%f3(3,i1-1,i2+1,i3),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2+1,i3) - phi_center_3d(this,i1-1,i2+1,i3) ) / ( 2.0_p_double * this%dx(1) )
+    term2 = term2 + 0.25_p_double * ( real(this%pert%e%f3(1,i1,i2,i3),p_double) + real(this%pert%e%f3(1,i1,i2,i3-1),p_double) ) * &
+            ( phi_center_3d(this,i1,i2,i3+1) - phi_center_3d(this,i1,i2,i3-1) ) / ( 2.0_p_double * this%dx(3) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(1,i1,i2+1,i3),p_double) + real(this%pert%e%f3(1,i1,i2+1,i3-1),p_double) ) * &
+            ( phi_center_3d(this,i1,i2+1,i3+1) - phi_center_3d(this,i1,i2+1,i3-1) ) / ( 2.0_p_double * this%dx(3) )
+  endif
   val = this%g_agg * ( pt * by - term1 + term2 )
 end function source_ey_3d
 
@@ -959,6 +1047,18 @@ real(p_double) function source_ez_3d( this, emf, dt_full, i1, i2, i3 ) result(va
           ( phi_center_3d(this,i1+1,i2,i3) - phi_center_3d(this,i1-1,i2,i3) ) / ( 2.0_p_double * this%dx(1) ) + &
           0.25_p_double * ( real(emf%e%f3(2,i1,i2,i3+1),p_double) + real(emf%e%f3(2,i1-1,i2,i3+1),p_double) ) * &
           ( phi_center_3d(this,i1+1,i2,i3+1) - phi_center_3d(this,i1-1,i2,i3+1) ) / ( 2.0_p_double * this%dx(1) )
+  if ( this%pert%if_initialized ) then
+    bz = bz + 0.25_p_double * ( real(this%pert%b%f3(3,i1,i2,i3),p_double) + real(this%pert%b%f3(3,i1-1,i2,i3),p_double) + &
+                               real(this%pert%b%f3(3,i1,i2-1,i3),p_double) + real(this%pert%b%f3(3,i1-1,i2-1,i3),p_double) )
+    term1 = term1 + 0.25_p_double * ( real(this%pert%e%f3(1,i1,i2,i3),p_double) + real(this%pert%e%f3(1,i1,i2-1,i3),p_double) ) * &
+            ( phi_center_3d(this,i1,i2+1,i3) - phi_center_3d(this,i1,i2-1,i3) ) / ( 2.0_p_double * this%dx(2) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(1,i1,i2,i3+1),p_double) + real(this%pert%e%f3(1,i1,i2-1,i3+1),p_double) ) * &
+            ( phi_center_3d(this,i1,i2+1,i3+1) - phi_center_3d(this,i1,i2-1,i3+1) ) / ( 2.0_p_double * this%dx(2) )
+    term2 = term2 + 0.25_p_double * ( real(this%pert%e%f3(2,i1,i2,i3),p_double) + real(this%pert%e%f3(2,i1-1,i2,i3),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2,i3) - phi_center_3d(this,i1-1,i2,i3) ) / ( 2.0_p_double * this%dx(1) ) + &
+            0.25_p_double * ( real(this%pert%e%f3(2,i1,i2,i3+1),p_double) + real(this%pert%e%f3(2,i1-1,i2,i3+1),p_double) ) * &
+            ( phi_center_3d(this,i1+1,i2,i3+1) - phi_center_3d(this,i1-1,i2,i3+1) ) / ( 2.0_p_double * this%dx(1) )
+  endif
   val = this%g_agg * ( pt * bz - term1 + term2 )
 end function source_ez_3d
 

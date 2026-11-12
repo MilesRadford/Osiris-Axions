@@ -175,6 +175,27 @@ module m_axion_field_define
     real(p_double) :: init_w_trans1 = 0.0_p_double
     real(p_double) :: init_w_trans2 = 0.0_p_double
     real(p_double) :: init_vphase = 1.0_p_double
+
+    ! Optional analytic travelling source for 1D phase-matching tests:
+    !
+    ! S(x,t) = test_src_ampl
+    ! * exp[-(x - test_src_x0 - test_src_v*t)^2 / (2 test_src_sigma^2)]
+    ! * cos[test_src_k * (x - test_src_x0 - test_src_v*t) + test_src_phase]
+    !
+    ! The source is added directly to the Klein-Gordon RHS, independently of g_agg.
+    logical :: test_src_on = .false.
+    real(p_double) :: test_src_ampl = 0.0_p_double
+    real(p_double) :: test_src_k = 0.0_p_double
+    real(p_double) :: test_src_v = 1.0_p_double
+    real(p_double) :: test_src_x0 = 0.0_p_double
+    real(p_double) :: test_src_sigma = 1.0_p_double
+    real(p_double) :: test_src_phase = 0.0_p_double
+    real(p_double) :: test_src_time = 0.0_p_double
+
+    ! Physical x1 coordinate of local cell i1=1. This makes the analytic
+    ! source MPI-safe without requiring the grid object inside the solver.
+    real(p_double) :: x1_cell_center0 = 0.0_p_double
+
     character(len=32) :: bc_type(2,p_max_dim) = reshape( (/ &
       'periodic                        ', 'periodic                        ', &
       'periodic                        ', 'periodic                        ', &
